@@ -74,6 +74,13 @@ class StrangenessTracker
   using MCLabSpan = gsl::span<const o2::MCCompLabel>;
   using VBracket = o2::math_utils::Bracket<int>;
 
+  struct kinkTrackHelper {
+    o2::track::TrackParCovF track;
+    GIndex index;
+    VBracket vtxBracket;
+    GIndex itsRef;
+  };
+
   StrangenessTracker() = default;
   ~StrangenessTracker() = default;
 
@@ -148,7 +155,7 @@ class StrangenessTracker
     return std::sqrt(e2Mother - p2Mother);
   }
 
-  double calcKinkMotherMass(std::array<float,3UL> pMother, std::array<float,3UL> pDaughter, PID pidDaughter, PID pidKink) // Kink = neuter Daughter
+  double calcKinkMotherMass(std::array<float, 3UL> pMother, std::array<float, 3UL> pDaughter, PID pidDaughter, PID pidKink) // Kink = neuter Daughter
   {
     double m2kink = PID::getMass2(pidKink);
     double m2daughter = PID::getMass2(pidDaughter);
@@ -156,7 +163,7 @@ class StrangenessTracker
     double p2Daughter = pDaughter[0] * pDaughter[0] + pDaughter[1] * pDaughter[1] + pDaughter[2] * pDaughter[2];
 
     double eDaughter = sqrt(p2Daughter + m2daughter);
-    std::array<float,3> pKink = {pMother[0] - pDaughter[0], pMother[1] - pDaughter[1], pMother[2] - pDaughter[2]};
+    std::array<float, 3> pKink = {pMother[0] - pDaughter[0], pMother[1] - pDaughter[1], pMother[2] - pDaughter[2]};
     double p2Kink = pKink[0] * pKink[0] + pKink[1] * pKink[1] + pKink[2] * pKink[2];
     double eKink = sqrt(m2kink + p2Kink);
     double eMother = eKink + eDaughter;
@@ -233,10 +240,9 @@ class StrangenessTracker
     // LOG(info) << " Patt Npixel: " << pattVec[0].getNPixels();
   }
 
-  float getMatchingChi2(o2::track::TrackParCovF v0, const TrackITS ITStrack, ITSCluster matchingClus)
+  float getMatchingChi2(o2::track::TrackParCovF v0, const TrackITS ITStrack)
   {
-    auto geom = o2::its::GeometryTGeo::Instance();
-    float alpha = geom->getSensorRefAlpha(matchingClus.getSensorID()), x = matchingClus.getX();
+    float alpha = ITStrack.getParamOut().getAlpha() , x = ITStrack.getParamOut().getX();
     if (v0.rotate(alpha)) {
       if (v0.propagateTo(x, mBz)) {
         return v0.getPredictedChi2(ITStrack.getParamOut());
@@ -276,9 +282,7 @@ class StrangenessTracker
   std::vector<int> mSortedITSindexes;              // indexes of sorted ITS tracks
   IndexTableUtils mUtils;                          // structure for computing eta/phi matching selections
 
-  std::vector<o2::track::TrackParCovF> mKinkTracks; // kink tracks
-  std::vector<GIndex> mKinkTrackIdxs;               // indexes of kink tracks
-  std::vector<VBracket> mKinkBrackets;              // time brackets for kink tracks
+  std::vector<kinkTrackHelper> mKinkTracks; // kink tracks
 
   std::vector<StrangeTrack> mStrangeTrackVec;       // structure containing updated mother and daughter tracks
   std::vector<KinkTrack> mKinkTrackVec;             // structure containing updated mother and daughter kink tracks
