@@ -35,8 +35,6 @@ struct KinkTrack {
   GIndex mTrackIdx;
   float mITSClusSize;
 
-  bool mKFused = false; // FKParticle or DCAFitter
-
   float mChi2Vertex = -1;
   float mChi2Match = -1;
 

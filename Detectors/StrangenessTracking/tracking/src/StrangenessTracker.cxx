@@ -78,15 +78,20 @@ bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoD
       if (tvid.isAmbiguous()) {
 
         if (kinkMap.find(tvid) != kinkMap.end()) { // track already in the map, update the time bracket
-          mKinkBrackets[kinkMap[tvid]].setMax(iv);
+          mKinkTracks[kinkMap[tvid]].vtxBracket.setMax(iv);
           continue;
         }
       }
 
-      mKinkTracks.push_back(recoData.getTrackParam(tvid));
-      mKinkBrackets.push_back({iv, iv});
-      mKinkTrackIdxs.push_back(tvid);
-      kinkMap[tvid] = mKinkTracks.size() - 1;
+      kinkTrackHelper kinkHelper;
+      kinkHelper.track = recoData.getTrackParam(tvid);
+      kinkHelper.index = tvid;
+      kinkHelper.vtxBracket = {iv, iv};
+      kinkHelper.itsRef = recoData.getITSContributorGID(tvid);
+      if (kinkHelper.itsRef.getSource() == GIndex::ITSAB) {
+        mKinkTracks.push_back(kinkHelper);
+        kinkMap[tvid] = mKinkTracks.size() - 1;
+      }
     }
   }
 
@@ -267,147 +272,107 @@ void StrangenessTracker::process()
 
   LOG(info) << "Analysing " << mKinkTracks.size() << " Kinks ...";
 
-  bool usingFKParticle = false;
-
   for (int iKink{0}; iKink < mKinkTracks.size(); iKink++) {
+    LOG(debug) << "--------------------------------------------";
     LOG(debug) << "Analysing Kink: " << iKink + 1 << "/" << mKinkTracks.size();
-    auto kink = mKinkTracks[iKink];
-    auto vrtxTrackIdx = mKinkTrackIdxs[iKink];
-    auto kinkVrtxIDmin = mKinkBrackets[iKink].getMin();
-    auto kinkVrtxIDmax = mKinkBrackets[iKink].getMax();
+    auto kink = mKinkTracks[iKink].track;
+    auto vrtxTrackIdx = mKinkTracks[iKink].index;
+    auto kinkVrtxIDmin = mKinkTracks[iKink].vtxBracket.getMin();
+    auto kinkVrtxIDmax = mKinkTracks[iKink].vtxBracket.getMax();
+    auto kinkITSid = mKinkTracks[iKink].itsRef;
+    LOG(debug) << "Kink source: " << vrtxTrackIdx.getSourceName();
+    LOG(debug) << "Kink Vtx ID: " << kinkVrtxIDmin << " - " << kinkVrtxIDmax;
+    if (kinkITSid.isSourceSet() == false) {
+      LOG(debug) << "ITS source not set";
+    } else {
+      LOG(debug) << "Kink ITS ref: " << kinkITSid.getIndex();
+      LOG(debug) << "get source: " << int(kinkITSid.getSource());
+    }
 
     auto iBinskink = mUtils.getBinRect(kink.getEta(), kink.getPhi(), mStrParams->mEtaBinSize, mStrParams->mPhiBinSize);
+    LOG(debug) << "Kink phi: " << kink.getPhi() << ", eta: " << kink.getEta();
 
     for (int& iBinKink : iBinskink) {
       for (int iTrack{mTracksIdxTable[iBinKink]}; iTrack < TMath::Min(mTracksIdxTable[iBinKink + 1], int(mSortedITStracks.size())); iTrack++) {
         mITStrack = mSortedITStracks[iTrack];
 
         auto& ITSindexRef = mSortedITSindexes[iTrack];
-        LOG(debug) << "----------------------";
-        LOG(debug) << "ITS track ref: " << mSortedITSindexes[iTrack];
 
-        if (mITSvtxBrackets[ITSindexRef].getMax() < kinkVrtxIDmin || mITSvtxBrackets[ITSindexRef].getMin() > kinkVrtxIDmax) { // no overlap in vertex IDs
+        if (mITStrack.getCharge() != kink.getCharge())
           continue;
-        } else {
-          if (matchKinkToITSTrack(kink, usingFKParticle)) {
-            mKinkTrack.mNLayers = mITStrack.getNumberOfClusters();
-            auto trackClusters = getTrackClusters();
-            auto& lastClus = trackClusters[0];
-            mKinkTrack.mChi2Match = getMatchingChi2(kink, mITStrack, lastClus);
 
-            auto motherMass = calcKinkMotherMass(mKinkTrack.mMotherP, mKinkTrack.mDaughterP, PID::Triton, PID::PI0); // just the Hypertriton case for now
-            mKinkTrack.mMasses[0] = motherMass;
+        if (mITSvtxBrackets[ITSindexRef].getMax() < kinkVrtxIDmin || mITSvtxBrackets[ITSindexRef].getMin() > kinkVrtxIDmax)
+          continue;
 
-            mKinkTrack.mTrackIdx = vrtxTrackIdx;
-            mKinkTrack.mITSRef = ITSindexRef;
-            mKinkTrack.mKFused = usingFKParticle;
+        if (matchKinkToITSTrack(kink)) {
+          LOG(debug) << "----------------------";
+          LOG(debug) << "ITS phi: " << mITStrack.getPhi() << ", eta: " << mITStrack.getEta();
+          LOG(debug) << "ITS track ref: " << mSortedITSindexes[iTrack];
+          LOG(debug) << "ITS Track matched with a Kink topology ....";
+          LOG(debug) << "Matching chi2: " << mKinkTrack.mChi2Match;
 
-            mKinkTrackVec.push_back(mKinkTrack);
-          }
+          mKinkTrack.mNLayers = mITStrack.getNumberOfClusters();
+          auto trackClusters = getTrackClusters();
+          auto& lastClus = trackClusters[0];
+          mKinkTrack.mChi2Match = getMatchingChi2(kink, mITStrack);
+
+          // compute angle between kink and ITS track
+          std::array<float, 3> kinkMom;
+          kink.getPxPyPzGlo(kinkMom);
+          auto kinkMomNorm = TMath::Sqrt(kinkMom[0] * kinkMom[0] + kinkMom[1] * kinkMom[1] + kinkMom[2] * kinkMom[2]);
+          std::array<float, 3> itsMom;
+          mITStrack.getPxPyPzGlo(itsMom);
+          auto itsMomNorm = TMath::Sqrt(itsMom[0] * itsMom[0] + itsMom[1] * itsMom[1] + itsMom[2] * itsMom[2]);
+          auto dotProd = kinkMom[0] * itsMom[0] + kinkMom[1] * itsMom[1] + kinkMom[2] * itsMom[2];
+          auto angle = TMath::ACos(dotProd / (kinkMomNorm * itsMomNorm)) * TMath::RadToDeg();
+          LOG(debug) << "Angle between kink and ITS track: " << angle;
+
+          auto motherMass = calcKinkMotherMass(mKinkTrack.mMotherP, mKinkTrack.mDaughterP, PID::Triton, PID::PI0); // just the Hypertriton case for now
+          mKinkTrack.mMasses[0] = motherMass;
+
+          mKinkTrack.mTrackIdx = vrtxTrackIdx;
+          mKinkTrack.mITSRef = ITSindexRef;
+          mKinkTrackVec.push_back(mKinkTrack);
         }
       }
     }
   }
 }
 
-bool StrangenessTracker::matchKinkToITSTrack(o2::track::TrackParCovF daughterTrack, bool useKFParticle)
+bool StrangenessTracker::matchKinkToITSTrack(o2::track::TrackParCovF daughterTrack)
 {
-  if (!useKFParticle) { // DCA Fitter
-    try {
-      mITStrack.getParamOut().checkCovariance();
-      daughterTrack.checkCovariance();
-      mFitterKink.process(mITStrack.getParamOut(), daughterTrack);
-      mFitterKink.propagateTracksToVertex();
-      if (mFitterKink.isPropagateTracksToVertexDone()) {
-        auto chi2 = mFitterKink.getChi2AtPCACandidate();
-        mKinkTrack.mChi2Vertex = chi2;
-        std::array<float, 3> R = mFitterKink.getPCACandidatePos();
-        mKinkTrack.mDecayVtx = R;
 
-        if (chi2 < 0 || chi2 > mStrParams->mMaxChi2)
-          return false;
-        double recR = sqrt(R[0] * R[0] + R[1] * R[1]);
-        if (recR < 18)
-          return false;
-      } else
-        return false;
-    } catch (std::runtime_error& e) {
-      return false;
-    }
-
-    mFitterKink.getTrack(0).getPxPyPzGlo(mKinkTrack.mMotherP);
-    mFitterKink.getTrack(1).getPxPyPzGlo(mKinkTrack.mDaughterP);
+  // mITStrack.getParamOut().checkCovariance();
+  // daughterTrack.checkCovariance();
+  int nCand;
+  
+  try {
+    nCand = mFitterKink.process(mITStrack.getParamOut(), daughterTrack);
+  } catch (std::runtime_error& e) {
+    LOG(debug) << "Fitterkink failed: " << e.what();
+    return false;
   }
 
-  else // KFParticle
-  {
-    // #ifdef HomogeneousField
-    // KFParticle::SetField(mBz);
-    // #endif
+  if (!mFitterKink.propagateTracksToVertex() || !nCand)
+    return false;
 
-    KFParticle kfMother = KFParticle();
-    KFParticle kfDaughter = KFParticle();
+  auto chi2 = mFitterKink.getChi2AtPCACandidate();
+  std::array<float, 3> R = mFitterKink.getPCACandidatePos();
 
-    std::array<float, 3> motherP = {0, 0, 0};
-    std::array<float, 3> daughterP = {0, 0, 0};
-    std::array<float, 3> motherV = {0, 0, 0};
-    std::array<float, 3> daughterV = {0, 0, 0};
+  LOG(debug) << "Chi 2: " << chi2;
+  if (chi2 < 0 || chi2 > mStrParams->mMaxChi2)
+    return false;
 
-    double posmomM[6], covM[21];
-    gpu::gpustd::array<float, 21> covMtemp; // = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-    mITStrack.getParamOut().getCovXYZPxPyPzGlo(covMtemp);
-    int chargeM = mITStrack.getParamOut().getCharge();
-    mITStrack.getParamOut().getXYZGlo(motherV);
-    for (int h = 0; h < 21; h++) {
-      covM[h] = covMtemp[h];
-    }
-    for (int h = 0; h < 6; h++) {
-      if (h >= 3) {
-        posmomM[h] = motherP[h - 3];
-      } else
-        posmomM[h] = motherV[h];
-    }
+  double recR = sqrt(R[0] * R[0] + R[1] * R[1]);
+  LOG(debug) << "R: " << recR;
+  if (recR < 18)
+    return false;
 
-    kfMother.Create(posmomM, covM, chargeM, 2.99131); // Hypertriton Mass
+  mKinkTrack.mChi2Vertex = chi2;
+  mKinkTrack.mDecayVtx = R;
 
-    double posmomD[6], covD[21];
-    gpu::gpustd::array<float, 21> covDtemp; // = {0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.,0.};
-    daughterTrack.getCovXYZPxPyPzGlo(covDtemp);
-    int chargeD = daughterTrack.getCharge();
-    daughterTrack.getXYZGlo(daughterV);
-    for (int h = 0; h < 21; h++) {
-      covD[h] = covDtemp[h];
-    }
-    for (int h = 0; h < 6; h++) {
-      if (h >= 3) {
-        posmomD[h] = daughterP[h - 3];
-      } else
-        posmomD[h] = daughterV[h];
-    }
-
-    kfDaughter.Create(posmomD, covD, chargeD, 2.808921); // Triton Mass
-
-    KFParticle kfKink;
-    kfKink.AddDaughter(kfMother);
-    kfKink.NDF() = -1;
-    kfKink.Chi2() = 0.f;
-    kfKink.SubtractDaughter(kfDaughter);
-    kfKink.SetNonlinearMassConstraint(0.1349766); // Pi0 Mass
-
-    KFParticle recMother{kfKink, kfDaughter};
-
-    float chi2 = kfKink.Chi2();
-    if (chi2 < 0 || chi2 > mStrParams->mMaxChi2)
-      return false;
-    std::array<float, 3> R = {recMother.X(), recMother.Y(), recMother.Z()};
-    if (sqrt(R[0] * R[0] + R[1] * R[1]) < 18)
-      return false;
-
-    mKinkTrack.mDecayVtx = R;
-    mKinkTrack.mChi2Vertex = chi2;
-    mKinkTrack.mMotherP = {recMother.Px(), recMother.Py(), recMother.Pz()};
-    mKinkTrack.mDaughterP = {kfDaughter.Px(), kfDaughter.Py(), kfDaughter.Pz()};
-  }
+  mFitterKink.getTrack(0).getPxPyPzGlo(mKinkTrack.mMotherP);
+  mFitterKink.getTrack(1).getPxPyPzGlo(mKinkTrack.mDaughterP);
 
   // computer cluster sizes
   std::vector<int> motherClusSizes;
@@ -427,7 +392,7 @@ bool StrangenessTracker::matchDecayToITStrack(float decayR)
   auto trackClusters = getTrackClusters();
   auto trackClusSizes = getTrackClusterSizes();
   auto& lastClus = trackClusters[0];
-  mStrangeTrack.mMatchChi2 = getMatchingChi2(mStrangeTrack.mMother, mITStrack, lastClus);
+  mStrangeTrack.mMatchChi2 = getMatchingChi2(mStrangeTrack.mMother, mITStrack);
 
   auto radTol = decayR < 4 ? mStrParams->mRadiusTolIB : mStrParams->mRadiusTolOB;
   auto nMinClusMother = trackClusters.size() < 4 ? 2 : mStrParams->mMinMotherClus;
@@ -585,20 +550,6 @@ bool StrangenessTracker::updateTrack(const ITSCluster& clus, o2::track::TrackPar
 
   return true;
 }
-/*
-void createTrackFromKFP(KFParticle& KFP, o2::track::TrackParCov& track, int charge, o2::track::PID pid)
-{
-  float xyz[3] = {KFP.GetX(), KFP.GetY(), KFP.GetZ()};
-  float pxpypz[3] = {KFP.GetPx(), KFP.GetPy(), KFP.GetPz()};
-  float covXYZPxPyPz[21] = KFP.CovarianceMatrix();
 
-  track.set(xyz, pxpypz, covXYZPxPyPz, charge, true, pid);
-}
-
-static Int_t IJ(Int_t i, Int_t j)
-{
-  return (j <= i) ? i * (i + 1) / 2 + j : j * (j + 1) / 2 + i;
-}
-*/
 } // namespace strangeness_tracking
 } // namespace o2
