@@ -45,9 +45,9 @@ DataProcessorSpec getStrangenessTrackingWriterSpec(bool useMC)
   auto loggerKink = [](std::vector<KinkTrack> const& kink) {
     LOG(info) << "StrangenessTracker writer pulled " << kink.size() << " kink tracks";
   };
-  auto loggerKFP = [](std::vector<KFParticle> const& kfp) {
-    LOG(info) << "StrangenessTracker writer pulled " << kfp.size() << " KFParticles";
-  };
+  //auto loggerKFP = [](std::vector<KFParticle> const& kfp) {
+  //  LOG(info) << "StrangenessTracker writer pulled " << kfp.size() << " KFParticles";
+  //};
 
   auto inpStTrkID = InputSpec{"strangetracks", "STK", "STRTRACKS", 0};
   auto inpKinkTrkID = InputSpec{"kinktracks", "STK", "KINKTRACKS", 0};

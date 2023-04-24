@@ -38,8 +38,7 @@ o2_add_library(ReconstructionDataFormats
                                      O2::GPUUtils
                                      O2::FrameworkLogger
                                      O2::DetectorsCommonDataFormats
-                                     O2::CommonDataFormat
-                                     KFParticle::KFParticle)
+                                     O2::CommonDataFormat)
 
 o2_target_root_dictionary(
   ReconstructionDataFormats

@@ -42,15 +42,17 @@
 
 #include "DCAFitter/DCAFitterN.h"
 #include "DetectorsBase/Propagator.h"
-#include "KFParticle.h"
-#include "KFVertex.h"
-#include "KFPVertex.h"
-#include "KFPTrack.h"
 
 namespace o2
 {
 namespace strangeness_tracking
 {
+
+enum DauType : int {
+  kV0DauPos = 0,
+  kV0DauNeg = 1,
+  kBach = 2
+};
 
 struct ClusAttachments {
 
@@ -86,7 +88,7 @@ class StrangenessTracker
 
   bool loadData(const o2::globaltracking::RecoContainer& recoData);
   bool matchDecayToITStrack(float decayR);
-  bool matchKinkToITSTrack(o2::track::TrackParCovF daughterTrack, bool KFParticle);
+  bool matchKinkToITSTrack(o2::track::TrackParCovF daughterTrack);
   void prepareITStracks();
   void process();
   bool updateTrack(const ITSCluster& clus, o2::track::TrackParCov& track);
@@ -193,7 +195,7 @@ class StrangenessTracker
     propPos.getPxPyPzGlo(pP);
     propNeg.getPxPyPzGlo(pN);
     std::array<float, 3> pV0 = {pP[0] + pN[0], pP[1] + pN[1], pP[2] + pN[2]};
-    newV0 = V0(v0XYZ, pV0, mFitterV0.calcPCACovMatrixFlat(0), propPos, propNeg, mV0dauIDs[0], mV0dauIDs[1], PID::HyperTriton);
+    newV0 = V0(v0XYZ, pV0, mFitterV0.calcPCACovMatrixFlat(0), propPos, propNeg, mV0dauIDs[kV0DauPos], mV0dauIDs[kV0DauNeg], PID::HyperTriton);
     return true;
   };
 
@@ -242,7 +244,7 @@ class StrangenessTracker
 
   float getMatchingChi2(o2::track::TrackParCovF v0, const TrackITS ITStrack)
   {
-    float alpha = ITStrack.getParamOut().getAlpha() , x = ITStrack.getParamOut().getX();
+    float alpha = ITStrack.getParamOut().getAlpha(), x = ITStrack.getParamOut().getX();
     if (v0.rotate(alpha)) {
       if (v0.propagateTo(x, mBz)) {
         return v0.getPredictedChi2(ITStrack.getParamOut());

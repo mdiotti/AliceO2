@@ -19,8 +19,6 @@
 #include <array>
 #include "ReconstructionDataFormats/Track.h"
 #include "ReconstructionDataFormats/VtxTrackIndex.h" //(?)
-#include "KFParticle.h"
-#include "KFPTrack.h"
 
 using GIndex = o2::dataformats::VtxTrackIndex;
 
@@ -41,7 +39,7 @@ struct KinkTrack {
   std::array<float, 3> mMotherP = {0, 0, 0};
   std::array<float, 3> mDaughterP = {0, 0, 0};
   std::array<float, 3> mDecayVtx;
-  std::array<float, 2> mMasses; // hypertriton and Sigma
+  std::array<float, 2> mMasses; // Hypertriton and Sigma
 };
 
 } // namespace dataformats
