@@ -59,7 +59,7 @@ bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoD
         continue;
       }
 
-      if (tvid.getSource() == GIndex::ITS) {
+      if (tvid.getSource() == GIndex::ITS || tvid.getSource() == GIndex::ITSAB) {
         if (mITSvtxBrackets[tvid.getIndex()].getMin() == -1) {
           mITSvtxBrackets[tvid.getIndex()].setMin(iv);
           mITSvtxBrackets[tvid.getIndex()].setMax(iv);
