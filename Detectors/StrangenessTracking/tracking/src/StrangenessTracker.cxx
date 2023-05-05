@@ -334,7 +334,7 @@ void StrangenessTracker::process()
           mKinkTrack.mMasses[0] = motherMass;
 
           mKinkTrack.mTrackIdx = vrtxTrackIdx;
-          mKinkTrack.mITSRef = kinkITSid.getIndex();
+          mKinkTrack.mITSRef = ITSindexRef;
           mKinkTrackVec.push_back(mKinkTrack);
         }
       }
