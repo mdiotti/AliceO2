@@ -60,6 +60,7 @@ void StrangenessTrackerSpec::init(framework::InitContext& ic)
   mTracker.setupFitters();
 
   LOG(info) << "Initialized strangeness tracker...";
+
 }
 
 void StrangenessTrackerSpec::run(framework::ProcessingContext& pc)
