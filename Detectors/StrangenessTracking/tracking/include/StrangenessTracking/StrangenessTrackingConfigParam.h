@@ -27,7 +27,7 @@ struct StrangenessTrackingParamConfig : public o2::conf::ConfigurableParamHelper
   // parameters
   float mRadiusTolIB = .3;     // Radius tolerance for matching V0s in the IB
   float mRadiusTolOB = .1;     // Radius tolerance for matching V0s in the OB
-  float mPhiBinSize = 0.2;     // Phi bin size for the matching grid
+  float mPhiBinSize = 2;     // Phi bin size for the matching grid
   float mEtaBinSize = 0.2;     // Eta bin size for the matching grid
   float mMinMotherClus = 3.;   // minimum number of cluster to be attached to the mother
   float mMaxChi2 = 50;         // Maximum matching chi2

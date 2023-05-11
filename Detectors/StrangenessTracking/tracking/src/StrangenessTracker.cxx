@@ -15,26 +15,40 @@
 #include "StrangenessTracking/StrangenessTracker.h"
 #include "ITStracking/IOUtils.h"
 
-
 namespace o2
 {
 namespace strangeness_tracking
 {
-
-std::vector<int> ITSidx = {7748, 11802, 1084, 1304, 1304, 6719, 848, 1842, 7963, 11535, 11630, 10321, 10664, 5063, 7923, 4931, 4466, 11529, 1846, 8370, 5151, 5439, 5433, 12036, 418, 12747, 722, 7691, 11942, 4049, 2244, 8058, 9391, 8904, 7671, 7499, 3865, 9330, 676, 2188, 2188, 2387, 270, 8910, 8434, 2687, 8022, 9139, 7329, 11362, 12406, 8596, 1558, 2241, 9677, 3121, 9197, 9460, 2838, 984, 1355, 11578, 5283, 2663, 11584, 22, 3911, 2448, 5279, 2887, 796, 2289, 2619, 891, 9154, 1709, 7513, 783, 1152, 4613, 7743, 2058, 9560, 11705, 10649, 9852, 936, 11027, 8333, 10205, 10854, 6262, 6671, 1926, 1136, 10564, 8771, 2228, 11192, 5777, 5203, 7401, 9137, 5265, 7482, 9075, 3890, 11869, 5062, 2764, 3916, 8507, 7254, 5086, 6921, 8672, 10338, 1415};
+std::vector<int> ITSidx = {45435, 19167, 61925, 98281, 98329, 126786, 99734, 11675, 28873, 113062, 122843, 32154, 59563, 74660, 85521, 116359, 103831, 24592, 56475, 76456, 15578, 83028, 90260, 118260, 131501, 21293, 36667, 76644, 37472, 97235, 120634, 138922, 16289, 23648, 24907, 64634, 78619, 21184, 13105, 15062, 14897, 92577, 108210, 7980, 36583, 96268, 100322, 141805, 143252, 11244, 11257, 30114, 50752, 59511, 47767, 23487, 56827, 88299, 85032, 71628, 73022, 3448, 21410, 101259, 16964, 52173, 53271, 112165, 30841, 71201, 5870, 62831, 99345, 137323, 10629, 101034, 22340, 42871, 111376, 133087, 136063, 1625, 48765, 75822, 120229, 60654, 26155, 121965, 16226, 30387, 31582, 79004, 33364, 77546, 16949, 50883, 129970, 129909, 79162, 110429, 128618, 23110, 109749, 20169, 41558, 76782, 95490, 130999, 58737, 91254, 92699, 122046, 33867, 10804, 67972, 9925, 131829, 135805};
 std::vector<int> ITSTPCidx = {100109, 108229, 97511, 97731, 97731, 103146, 91152, 93847, 99968, 103540, 103635, 97789, 98132, 92531, 95391, 92399, 99081, 106058, 96375, 102899, 98238, 98526, 98520, 105123, 94105, 103867, 91842, 98811, 103727, 95834, 97734, 103562, 98241, 97754, 96521, 96349, 92715, 101056, 90870, 92382, 92382, 92581, 90464, 107400, 106924, 101177, 106512, 107629, 105819, 105898, 106942, 103132, 96094, 96777, 97884, 94710, 100786, 101049, 92617, 94182, 94553, 106352, 100057, 97437, 102940, 91378, 95267, 93804, 97677, 95285, 94456, 95949, 96279, 94551, 102674, 95229, 100501, 93771, 94140, 97601, 100731, 94845, 102347, 104492, 103436, 101776, 93713, 103804, 96776, 98648, 99297, 99165, 98271, 93526, 94554, 103982, 102189, 92622, 101885, 96470, 96078, 97388, 99124, 99196, 101413, 103006, 97821, 105800, 92396, 90098, 92486, 97077, 97994, 95952, 97787, 102645, 104311, 95388};
 std::vector<int> firstIdxITS = {1718, 767, 2383, 3804, 3807, 4948, 4004, 428, 1122, 4428, 4813, 1301, 2415, 3034, 3486, 4788, 4218, 959, 2251, 3020, 624, 3292, 3599, 4708, 5240, 840, 1502, 3156, 1513, 3906, 4828, 5484, 681, 969, 1014, 2621, 3151, 877, 557, 638, 638, 3669, 4304, 317, 1407, 3778, 3924, 5560, 5624, 451, 451, 1158, 1961, 2305, 1928, 903, 2252, 3544, 3370, 2735, 2799, 153, 881, 4048, 677, 2083, 2132, 4412, 1230, 2842, 216, 2421, 3840, 5356, 433, 4150, 852, 1644, 4398, 5292, 5416, 73, 1944, 3000, 4818, 2369, 1058, 4872, 633, 1187, 1254, 3108, 1343, 3040, 665, 2018, 5199, 5161, 3181, 4412, 5174, 931, 4502, 847, 1612, 3070, 3843, 5177, 2344, 3652, 3676, 4855, 1386, 414, 2707, 391, 5231, 5392};
 std::vector<int> lastIdxITS = {1722, 767, 2383, 3804, 3807, 4952, 4004, 433, 1122, 4435, 4813, 1301, 2415, 3034, 3489, 4788, 4218, 961, 2251, 3020, 624, 3300, 3599, 4708, 5240, 840, 1502, 3156, 1513, 3906, 4828, 5484, 681, 969, 1019, 2621, 3151, 881, 557, 643, 638, 3669, 4304, 317, 1407, 3778, 3929, 5560, 5624, 451, 451, 1158, 1961, 2305, 1928, 903, 2252, 3544, 3370, 2741, 2799, 162, 881, 4048, 677, 2083, 2132, 4412, 1230, 2842, 216, 2421, 3840, 5356, 433, 4150, 852, 1644, 4403, 5297, 5416, 73, 1950, 3000, 4821, 2377, 1058, 4872, 633, 1193, 1254, 3108, 1343, 3054, 679, 2018, 5199, 5167, 3181, 4412, 5183, 931, 4502, 847, 1612, 3075, 3843, 5177, 2344, 3659, 3676, 4855, 1386, 414, 2707, 391, 5231, 5392};
 std::vector<int> firstIdxITSTPC = {1719, 763, 2377, 3801, 3801, 4942, 4002, 430, 1122, 4432, 4813, 1296, 2413, 3030, 3486, 4786, 4216, 959, 2250, 3015, 623, 3290, 3597, 4706, 5236, 840, 1497, 3153, 1512, 3904, 4827, 5483, 680, 967, 1014, 2618, 3148, 878, 554, 638, 638, 3669, 4301, 313, 1405, 3778, 3924, 5559, 5624, 447, 447, 1156, 1959, 2301, 1928, 896, 2247, 3544, 3370, 2729, 2799, 149, 878, 4044, 675, 2080, 2132, 4411, 1229, 2839, 205, 2418, 3838, 5352, 431, 4146, 850, 1643, 4398, 5294, 5415, 73, 1947, 2999, 4818, 2372, 1056, 4869, 630, 1188, 1251, 3107, 1342, 3043, 671, 2017, 5198, 5165, 3181, 4409, 5174, 929, 4499, 844, 1611, 3071, 3841, 5175, 2340, 3653, 3672, 4855, 1383, 411, 2698, 389, 5225, 5392};
 std::vector<int> lastIdxITSTPC = {1722, 766, 2384, 3806, 3806, 4947, 4007, 433, 1123, 4433, 4816, 1301, 2415, 3032, 3489, 4791, 4222, 960, 2252, 3024, 626, 3294, 3602, 4707, 5244, 841, 1502, 3158, 1517, 3914, 4831, 5485, 681, 969, 1019, 2619, 3154, 880, 559, 639, 639, 3675, 4305, 317, 1407, 3786, 3929, 5562, 5626, 452, 452, 1159, 1966, 2303, 1929, 902, 2249, 3544, 3370, 2733, 2805, 153, 881, 4048, 679, 2083, 2132, 4417, 1233, 2845, 210, 2424, 3842, 5356, 434, 4151, 852, 1649, 4404, 5297, 5419, 75, 1951, 3001, 4821, 2377, 1060, 4874, 634, 1193, 1256, 3112, 1345, 3048, 676, 2021, 5200, 5167, 3181, 4415, 5179, 929, 4506, 849, 1617, 3074, 3843, 5181, 2346, 3659, 3675, 4856, 1386, 418, 2702, 395, 5231, 5396};
 std::vector<int> timeFrame = {0, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6, 7, 7, 7, 8, 8, 8, 8, 9, 11, 11, 11, 12, 12, 13, 14, 15, 15, 15, 15, 15, 16, 17, 17, 17, 17, 17, 18, 18, 18, 18, 18, 18, 19, 19, 19, 19, 19, 20, 21, 21, 21, 22, 23, 23, 24, 24, 24, 25, 25, 25, 25, 26, 26, 27, 27, 27, 27, 28, 28, 29, 29, 29, 29, 29, 30, 30, 30, 30, 31, 32, 32, 33, 33, 33, 35, 36, 36, 37, 37, 37, 38, 39, 39, 40, 41, 41, 42, 42, 42, 42, 42, 43, 43, 45, 45, 46, 48, 48, 49, 49, 49};
+std::vector<float> motherP = {1.8119, 4.37115, 1.69723, 0.0898072, 0.0932721, 0.233307, 1.8236, 0.950752, 0.483483, 0.546944, 0.185222, 0.107177, 0.0883816, 0.222433, 0.173879, 0.733001, 1.42899, 0.0978534, 1.01701, 2.12723, 0.327009, 0.725986, 0.460461, 0.951474, 0.182857, 0.439034, 0.17864, 0.350104, 4.95471, 0.154732, 0.442819, 0.171942, 0.901095, 0.505847, 1.67161, 0.212961, 0.823567, 0.260268, 0.975572, 0.496941, 1.17982, 1.04304, 0.073219, 0.468545, 0.11044, 1.11777, 8.0787, 3.28753, 1.39361, 0.230879, 0.291566, 0.22136, 0.117921, 0.0847013, 3.56081, 0.153272, 0.813333, 0.170045, 0.0726088, 0.177457, 0.641993, 0.22768, 0.539374, 0.298004, 1.04772, 1.41437, 0.276413, 0.178523, 0.3093, 1.31738, 1.18981, 0.949475, 3.97318, 0.0787854, 1.85827, 0.291824, 0.0353118, 0.703839, 0.111557, 1.27985, 2.42676, 0.255061, 0.543773, 4.71024, 0.170868, 0.19138, 6.1694, 0.0926141, 0.767599, 0.106313, 0.330195, 0.245851, 0.885648, 0.054263, 0.0718397, 0.3491, 0.0952367, 1.5485, 1.39919, 0.543777, 0.118867, 0.81291, 2.09677, 0.369509, 1.25752, 2.03987, 0.0513297, 1.56234, 0.471271, 0.14253, 1.75061, 0.380279, 0.159775, 0.346055, 0.415435, 1.20211, 0.242556, 0.313336};
+std::vector<float> daughterP = {0.723951, 0.691176, 0.273103, 0.167058, 0.167058, 0.687142, 0.21159, 0.404365, 0.378909, 0.325116, 0.29618, 0.272722, 0.21396, 0.186314, 0.196325, 0.451385, 0.320629, 0.163536, 0.511052, 0.300634, 0.330515, 0.191595, 0.39465, 0.519392, 0.170778, 0.391259, 0.180665, 0.327116, 1.31091, 0.162861, 0.317229, 0.821022, 0.259854, 0.330503, 0.462353, 0.175842, 0.419549, 0.175197, 0.289017, 0.338556, 0.338556, 0.421765, 0.185605, 0.390764, 0.25523, 0.544602, 0.833421, 0.358505, 0.431382, 0.323221, 0.299331, 0.765439, 1.18648, 0.194506, 0.374616, 0.987322, 1.4219, 0.281828, 1.37474, 0.201514, 0.386358, 1.89516, 0.82412, 2.22687, 0.403692, 0.217566, 0.177557, 0.173564, 0.317421, 0.535082, 0.192543, 0.374536, 1.28019, 0.259028, 0.401755, 0.181595, 0.162323, 0.189668, 0.165972, 0.431102, 0.310219, 0.289794, 0.164851, 1.77781, 1.62406, 0.872809, 1.48544, 0.186351, 0.334798, 0.196895, 0.209309, 1.00164, 0.303422, 0.176461, 0.234934, 0.300128, 1.5497, 0.45517, 0.301538, 0.24126, 0.169867, 0.160488, 0.476397, 0.217955, 0.649355, 0.494288, 0.196082, 1.77052, 0.54263, 0.1866, 0.554365, 0.342765, 0.218697, 0.195822, 0.195373, 0.313974, 2.24752, 0.331382};
 
-//int TFcount = 0;
+int ITStest = 60654;
+int ITSTPCtest = 101776;
+int TFtest = 31;
+int ITStestV1 = 2369;
+int ITStestV2 = 2405;
+int ITSTPCtestV1 = 2372;
+int ITSTPCtestV2 = 2377;
+
+double testMotherP = 0.19138;
+double testDaughterP = 0.872809;
+
+int TFcount = 0;
 
 bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoData)
 {
-  //TFcount++;
+  TFcount++;
   clear();
+
+  // if (TFcount != TFtest)
+  //   return;
 
   mInputV0tracks = recoData.getV0s();
   mInputCascadeTracks = recoData.getCascades();
@@ -100,15 +114,14 @@ bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoD
       kinkHelper.itsRef = recoData.getITSContributorGID(tvid);
       if (kinkHelper.itsRef.getSource() == GIndex::ITSAB) {
         auto itstpcidx = kinkHelper.index;
-        for(int i = 0; i< ITSTPCidx.size(); i++){
-          //if(ITSTPCidx[i] == itstpcidx.getIndex() && TFcount == timeFrame[i]){
-            if(ITSTPCidx[i] == itstpcidx.getIndex()){
+        /*for(int i = 0; i< ITSTPCidx.size(); i++){
+          if(ITSTPCidx[i] == itstpcidx.getIndex() && TFcount == timeFrame[i]){
             LOG(info) <<"ITSTPC track : " << itstpcidx.getIndex() << " with source " << itstpcidx.getSourceName();
             LOG(info) <<"Momentum : " << kinkHelper.track.getP();
             LOG(info) <<"TF : " << timeFrame[i];
           }
-        }
-        
+        }*/
+
         mKinkTracks.push_back(kinkHelper);
         kinkMap[tvid] = mKinkTracks.size() - 1;
       }
@@ -133,6 +146,9 @@ bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoD
 void StrangenessTracker::prepareITStracks() // sort tracks by eta and phi and select only tracks with vertex matching
 {
 
+  // if (TFcount != TFtest)
+  // return;
+
   for (int iTrack{0}; iTrack < mInputITStracks.size(); iTrack++) {
     if (mITSvtxBrackets[iTrack].getMin() == -1) {
       continue;
@@ -150,10 +166,88 @@ void StrangenessTracker::prepareITStracks() // sort tracks by eta and phi and se
   }
   std::exclusive_scan(mTracksIdxTable.begin(), mTracksIdxTable.begin() + mUtils.mPhiBins * mUtils.mEtaBins, mTracksIdxTable.begin(), 0);
   mTracksIdxTable[mUtils.mPhiBins * mUtils.mEtaBins] = mSortedITStracks.size();
-}
 
+  // to be removed
+
+  LOG(info) << "Checking Matches at TF " << TFcount;
+
+  for (int i = 0; i < mKinkTracks.size(); i++) {
+    for (int j = 0; j < mInputITStracks.size(); j++) {
+      auto vrtxTrackIdx = mKinkTracks[i].index;
+      auto kink = mKinkTracks[i].track;
+      auto kinkVrtxIDmin = mKinkTracks[i].vtxBracket.getMin();
+      auto kinkVrtxIDmax = mKinkTracks[i].vtxBracket.getMax();
+      auto itsTrack = mSortedITStracks[j];
+      auto ITSindexRef = mSortedITSindexes[j];
+
+      for (int idx = 0; idx < ITSidx.size(); idx++) {
+        if (ITSidx[idx] == ITSindexRef && ITSTPCidx[idx] == vrtxTrackIdx.getIndex() && TFcount == timeFrame[idx]) {
+          // match
+          LOG(info) << "Match found! "
+                    << "Time Frame " << TFcount;
+          LOG(info) << "Track info: ITS " << ITSidx[idx] << " ITSTPC " << ITSTPCidx[idx] << " Source " << vrtxTrackIdx.getSourceName();
+          LOG(info) << "Kink Vertexes:";
+          LOG(info) << "ITS: " << mITSvtxBrackets[ITSindexRef].getMin() << " - " << mITSvtxBrackets[ITSindexRef].getMax();
+          LOG(info) << "ITSTPC: " << kinkVrtxIDmin << " - " << kinkVrtxIDmax;
+          LOG(info) << "Macro Vertexes:";
+          LOG(info) << "ITS: " << firstIdxITS[idx] << " - " << lastIdxITS[idx];
+          LOG(info) << "ITSTPC: " << firstIdxITSTPC[idx] << " - " << lastIdxITSTPC[idx];
+          LOG(info) << "Kink Momenta:";
+          LOG(info) << "ITS: " << itsTrack.getP();
+          LOG(info) << "ITSTPC: " << kink.getP();
+          LOG(info) << "Macro Momenta:";
+          LOG(info) << "ITS:" << motherP[idx];
+          LOG(info) << "ITSTPC:" << daughterP[idx];
+        }
+      }
+    }
+  }
+}
+/*
+void StrangenessTracker::checkMatches()
+{
+
+  LOG(info) << "Checking Matches at TF " << TFcount;
+
+  for (int i = 0; i < mKinkTracks.size(); i++) {
+    for (int j = 0; j < mInputITStracks.size(); j++) {
+      auto vrtxTrackIdx = mKinkTracks[i].index;
+      auto kink = mKinkTracks[i].track;
+      auto kinkVrtxIDmin = mKinkTracks[i].vtxBracket.getMin();
+      auto kinkVrtxIDmax = mKinkTracks[i].vtxBracket.getMax();
+      auto itsTrack = mSortedITStracks[j];
+      auto ITSindexRef = mSortedITSindexes[j];
+
+      for (int idx = 0; idx < ITSidx.size(); idx++) {
+        if (ITSidx[idx] == ITSindexRef && ITSTPCidx[idx] == vrtxTrackIdx.getIndex() && TFcount == timeFrame[idx]) {
+          // match
+          LOG(info) << "Match found! "
+                    << "Time Frame " << TFcount;
+          LOG(info) << "Track info: ITS " << ITSidx[idx] << " ITSTPC " << ITSTPCidx[idx] << " Source " << vrtxTrackIdx.getSourceName();
+          LOG(info) << "Kink Vertexes:";
+          LOG(info) << "ITS: " << mITSvtxBrackets[ITSindexRef].getMin() << " - " << mITSvtxBrackets[ITSindexRef].getMax();
+          LOG(info) << "ITSTPC: " << kinkVrtxIDmin << " - " << kinkVrtxIDmax;
+          LOG(info) << "Macro Vertexes:";
+          LOG(info) << "ITS: " << firstIdxITS[idx] << " - " << lastIdxITS[idx];
+          LOG(info) << "ITSTPC: " << firstIdxITSTPC[idx] << " - " << lastIdxITSTPC[idx];
+          LOG(info) << "Kink Momenta:";
+          LOG(info) << "ITS: " << itsTrack.getP();
+          LOG(info) << "ITSTPC: " << kink.getP();
+          LOG(info) << "Macro Momenta:";
+          LOG(info) << "ITS:" << motherP[idx];
+          LOG(info) << "ITSTPC:" << daughterP[idx];
+        }
+      }
+    }
+  }
+}
+*/
 void StrangenessTracker::process()
 {
+  // if (TFcount != TFtest)
+  //   return;
+  LOG(info) << "Processing TF " << TFcount;
+
   // Loop over V0s
   mDaughterTracks.resize(2); // resize to 2 prongs: first positive second negative
 
@@ -320,10 +414,14 @@ void StrangenessTracker::process()
 
         auto& ITSindexRef = mSortedITSindexes[iTrack];
 
+        if (mITStrack.getCharge() != kink.getCharge())
+          continue;
+
         for (int idx = 0; idx < ITSidx.size(); idx++) {
-          if (ITSidx[idx] == ITSindexRef && ITSTPCidx[idx] == vrtxTrackIdx.getIndex()) {
+          if (ITSidx[idx] == ITSindexRef && ITSTPCidx[idx] == vrtxTrackIdx.getIndex() && TFcount == timeFrame[idx]) {
             // match
-            LOG(info) << "Match found!";
+            LOG(info) << "Match found! "
+                      << "Time Frame " << TFcount;
             LOG(info) << "Track info: ITS " << ITSidx[idx] << " ITSTPC " << ITSTPCidx[idx] << " Source " << vrtxTrackIdx.getSourceName();
             LOG(info) << "Kink Vertexes:";
             LOG(info) << "ITS: " << mITSvtxBrackets[ITSindexRef].getMin() << " - " << mITSvtxBrackets[ITSindexRef].getMax();
@@ -331,11 +429,14 @@ void StrangenessTracker::process()
             LOG(info) << "Macro Vertexes:";
             LOG(info) << "ITS: " << firstIdxITS[idx] << " - " << lastIdxITS[idx];
             LOG(info) << "ITSTPC: " << firstIdxITSTPC[idx] << " - " << lastIdxITSTPC[idx];
+            LOG(info) << "Kink Momenta";
+            LOG(info) << "ITS: " << mITStrack.getP();
+            LOG(info) << "ITSTPC: " << kink.getP();
+            LOG(info) << "Macro Momenta:";
+            LOG(info) << "ITS:" << motherP[idx];
+            LOG(info) << "ITSTPC:" << daughterP[idx];
           }
         }
-
-        if (mITStrack.getCharge() != kink.getCharge())
-          continue;
 
         if (mITSvtxBrackets[ITSindexRef].getMax() < kinkVrtxIDmin || mITSvtxBrackets[ITSindexRef].getMin() > kinkVrtxIDmax) {
           continue;

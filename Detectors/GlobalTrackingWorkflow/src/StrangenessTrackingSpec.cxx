@@ -75,8 +75,9 @@ void StrangenessTrackerSpec::run(framework::ProcessingContext& pc)
   auto geom = o2::its::GeometryTGeo::Instance();
   mTracker.setBz(o2::base::Propagator::Instance()->getNominalBz());
   mTracker.loadData(recoData);
-  return; //to be removed
   mTracker.prepareITStracks();
+  //mTracker.checkMatches();  //to be removed
+  return; //to be removed
   mTracker.process();
   pc.outputs().snapshot(Output{"STK", "STRTRACKS", 0, Lifetime::Timeframe}, mTracker.getStrangeTrackVec());
   pc.outputs().snapshot(Output{"STK", "KINKTRACKS", 0, Lifetime::Timeframe}, mTracker.getKinkTrackVec());
