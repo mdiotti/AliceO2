@@ -14,6 +14,8 @@
 #include <numeric>
 #include "StrangenessTracking/StrangenessTracker.h"
 #include "ITStracking/IOUtils.h"
+#include "ReconstructionDataFormats/TrackTPCITS.h"
+using TrackTPCITS = o2::dataformats::TrackTPCITS;
 
 namespace o2
 {
@@ -29,26 +31,23 @@ std::vector<int> timeFrame = {0, 2, 2, 2, 2, 2, 3, 4, 4, 4, 4, 5, 5, 5, 5, 5, 6,
 std::vector<float> motherP = {1.8119, 4.37115, 1.69723, 0.0898072, 0.0932721, 0.233307, 1.8236, 0.950752, 0.483483, 0.546944, 0.185222, 0.107177, 0.0883816, 0.222433, 0.173879, 0.733001, 1.42899, 0.0978534, 1.01701, 2.12723, 0.327009, 0.725986, 0.460461, 0.951474, 0.182857, 0.439034, 0.17864, 0.350104, 4.95471, 0.154732, 0.442819, 0.171942, 0.901095, 0.505847, 1.67161, 0.212961, 0.823567, 0.260268, 0.975572, 0.496941, 1.17982, 1.04304, 0.073219, 0.468545, 0.11044, 1.11777, 8.0787, 3.28753, 1.39361, 0.230879, 0.291566, 0.22136, 0.117921, 0.0847013, 3.56081, 0.153272, 0.813333, 0.170045, 0.0726088, 0.177457, 0.641993, 0.22768, 0.539374, 0.298004, 1.04772, 1.41437, 0.276413, 0.178523, 0.3093, 1.31738, 1.18981, 0.949475, 3.97318, 0.0787854, 1.85827, 0.291824, 0.0353118, 0.703839, 0.111557, 1.27985, 2.42676, 0.255061, 0.543773, 4.71024, 0.170868, 0.19138, 6.1694, 0.0926141, 0.767599, 0.106313, 0.330195, 0.245851, 0.885648, 0.054263, 0.0718397, 0.3491, 0.0952367, 1.5485, 1.39919, 0.543777, 0.118867, 0.81291, 2.09677, 0.369509, 1.25752, 2.03987, 0.0513297, 1.56234, 0.471271, 0.14253, 1.75061, 0.380279, 0.159775, 0.346055, 0.415435, 1.20211, 0.242556, 0.313336};
 std::vector<float> daughterP = {0.723951, 0.691176, 0.273103, 0.167058, 0.167058, 0.687142, 0.21159, 0.404365, 0.378909, 0.325116, 0.29618, 0.272722, 0.21396, 0.186314, 0.196325, 0.451385, 0.320629, 0.163536, 0.511052, 0.300634, 0.330515, 0.191595, 0.39465, 0.519392, 0.170778, 0.391259, 0.180665, 0.327116, 1.31091, 0.162861, 0.317229, 0.821022, 0.259854, 0.330503, 0.462353, 0.175842, 0.419549, 0.175197, 0.289017, 0.338556, 0.338556, 0.421765, 0.185605, 0.390764, 0.25523, 0.544602, 0.833421, 0.358505, 0.431382, 0.323221, 0.299331, 0.765439, 1.18648, 0.194506, 0.374616, 0.987322, 1.4219, 0.281828, 1.37474, 0.201514, 0.386358, 1.89516, 0.82412, 2.22687, 0.403692, 0.217566, 0.177557, 0.173564, 0.317421, 0.535082, 0.192543, 0.374536, 1.28019, 0.259028, 0.401755, 0.181595, 0.162323, 0.189668, 0.165972, 0.431102, 0.310219, 0.289794, 0.164851, 1.77781, 1.62406, 0.872809, 1.48544, 0.186351, 0.334798, 0.196895, 0.209309, 1.00164, 0.303422, 0.176461, 0.234934, 0.300128, 1.5497, 0.45517, 0.301538, 0.24126, 0.169867, 0.160488, 0.476397, 0.217955, 0.649355, 0.494288, 0.196082, 1.77052, 0.54263, 0.1866, 0.554365, 0.342765, 0.218697, 0.195822, 0.195373, 0.313974, 2.24752, 0.331382};
 
-int ITStest = 60654;
-int ITSTPCtest = 101776;
-int TFtest = 31;
-int ITStestV1 = 2369;
-int ITStestV2 = 2405;
-int ITSTPCtestV1 = 2372;
-int ITSTPCtestV2 = 2377;
+int ITStest = 74660;             // 60654;
+int ITSTPCtest = 92531;          // 101776;
+int TFtest = 5;                  // 31;
+int ITStestV1 = 3034;            // 2369;
+int ITStestV2 = 3034;            // 2405;
+int ITSTPCtestV1 = 3030;         // 2372;
+int ITSTPCtestV2 = 3032;         // 2377;
 
-double testMotherP = 0.19138;
-double testDaughterP = 0.872809;
+double testMotherP = 0.222433;   // 0.19138;
+double testDaughterP = 0.186314; // 0.872809;
 
-int TFcount = 0;
+int TFcount = -1;
 
 bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoData)
 {
   TFcount++;
   clear();
-
-  // if (TFcount != TFtest)
-  //   return;
 
   mInputV0tracks = recoData.getV0s();
   mInputCascadeTracks = recoData.getCascades();
@@ -75,7 +74,7 @@ bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoD
 
   std::unordered_map<GIndex, int> kinkMap;
 
-  int nv = vtxRefs.size();
+  int nv = vtxRefs.size() - 1;
   for (int iv = 0; iv < nv; iv++) {
     const auto& vtref = vtxRefs[iv];
     int it = vtref.getFirstEntry(), itLim = it + vtref.getEntries();
@@ -113,15 +112,6 @@ bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoD
       kinkHelper.vtxBracket = {iv, iv};
       kinkHelper.itsRef = recoData.getITSContributorGID(tvid);
       if (kinkHelper.itsRef.getSource() == GIndex::ITSAB) {
-        auto itstpcidx = kinkHelper.index;
-        /*for(int i = 0; i< ITSTPCidx.size(); i++){
-          if(ITSTPCidx[i] == itstpcidx.getIndex() && TFcount == timeFrame[i]){
-            LOG(info) <<"ITSTPC track : " << itstpcidx.getIndex() << " with source " << itstpcidx.getSourceName();
-            LOG(info) <<"Momentum : " << kinkHelper.track.getP();
-            LOG(info) <<"TF : " << timeFrame[i];
-          }
-        }*/
-
         mKinkTracks.push_back(kinkHelper);
         kinkMap[tvid] = mKinkTracks.size() - 1;
       }
@@ -145,10 +135,6 @@ bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoD
 
 void StrangenessTracker::prepareITStracks() // sort tracks by eta and phi and select only tracks with vertex matching
 {
-
-  // if (TFcount != TFtest)
-  // return;
-
   for (int iTrack{0}; iTrack < mInputITStracks.size(); iTrack++) {
     if (mITSvtxBrackets[iTrack].getMin() == -1) {
       continue;
@@ -172,14 +158,14 @@ void StrangenessTracker::prepareITStracks() // sort tracks by eta and phi and se
   LOG(info) << "Checking Matches at TF " << TFcount;
 
   for (int i = 0; i < mKinkTracks.size(); i++) {
-    for (int j = 0; j < mInputITStracks.size(); j++) {
+    for (int j = 0; j < mSortedITStracks.size(); j++) {
       auto vrtxTrackIdx = mKinkTracks[i].index;
       auto kink = mKinkTracks[i].track;
       auto kinkVrtxIDmin = mKinkTracks[i].vtxBracket.getMin();
       auto kinkVrtxIDmax = mKinkTracks[i].vtxBracket.getMax();
+
       auto itsTrack = mSortedITStracks[j];
       auto ITSindexRef = mSortedITSindexes[j];
-
       for (int idx = 0; idx < ITSidx.size(); idx++) {
         if (ITSidx[idx] == ITSindexRef && ITSTPCidx[idx] == vrtxTrackIdx.getIndex() && TFcount == timeFrame[idx]) {
           // match
@@ -203,45 +189,7 @@ void StrangenessTracker::prepareITStracks() // sort tracks by eta and phi and se
     }
   }
 }
-/*
-void StrangenessTracker::checkMatches()
-{
 
-  LOG(info) << "Checking Matches at TF " << TFcount;
-
-  for (int i = 0; i < mKinkTracks.size(); i++) {
-    for (int j = 0; j < mInputITStracks.size(); j++) {
-      auto vrtxTrackIdx = mKinkTracks[i].index;
-      auto kink = mKinkTracks[i].track;
-      auto kinkVrtxIDmin = mKinkTracks[i].vtxBracket.getMin();
-      auto kinkVrtxIDmax = mKinkTracks[i].vtxBracket.getMax();
-      auto itsTrack = mSortedITStracks[j];
-      auto ITSindexRef = mSortedITSindexes[j];
-
-      for (int idx = 0; idx < ITSidx.size(); idx++) {
-        if (ITSidx[idx] == ITSindexRef && ITSTPCidx[idx] == vrtxTrackIdx.getIndex() && TFcount == timeFrame[idx]) {
-          // match
-          LOG(info) << "Match found! "
-                    << "Time Frame " << TFcount;
-          LOG(info) << "Track info: ITS " << ITSidx[idx] << " ITSTPC " << ITSTPCidx[idx] << " Source " << vrtxTrackIdx.getSourceName();
-          LOG(info) << "Kink Vertexes:";
-          LOG(info) << "ITS: " << mITSvtxBrackets[ITSindexRef].getMin() << " - " << mITSvtxBrackets[ITSindexRef].getMax();
-          LOG(info) << "ITSTPC: " << kinkVrtxIDmin << " - " << kinkVrtxIDmax;
-          LOG(info) << "Macro Vertexes:";
-          LOG(info) << "ITS: " << firstIdxITS[idx] << " - " << lastIdxITS[idx];
-          LOG(info) << "ITSTPC: " << firstIdxITSTPC[idx] << " - " << lastIdxITSTPC[idx];
-          LOG(info) << "Kink Momenta:";
-          LOG(info) << "ITS: " << itsTrack.getP();
-          LOG(info) << "ITSTPC: " << kink.getP();
-          LOG(info) << "Macro Momenta:";
-          LOG(info) << "ITS:" << motherP[idx];
-          LOG(info) << "ITSTPC:" << daughterP[idx];
-        }
-      }
-    }
-  }
-}
-*/
 void StrangenessTracker::process()
 {
   // if (TFcount != TFtest)
