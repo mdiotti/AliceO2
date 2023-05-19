@@ -106,6 +106,7 @@ class StrangenessTracker
     mClusAttachments.clear();
     mStrangeTrackVec.clear();
     mKinkTrackVec.clear();
+    mKinkTracks.clear();
     mTracksIdxTable.clear();
     mSortedITStracks.clear();
     mSortedITSindexes.clear();
