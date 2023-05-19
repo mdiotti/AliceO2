@@ -40,6 +40,9 @@ struct KinkTrack {
   std::array<float, 3> mDaughterP = {0, 0, 0};
   std::array<float, 3> mDecayVtx;
   std::array<float, 2> mMasses; // Hypertriton and Sigma
+
+  int timeFrame = -1; //to be removed
+  bool positive = false; //to be removed
 };
 
 } // namespace dataformats

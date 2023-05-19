@@ -76,7 +76,6 @@ void StrangenessTrackerSpec::run(framework::ProcessingContext& pc)
   mTracker.setBz(o2::base::Propagator::Instance()->getNominalBz());
   mTracker.loadData(recoData);
   mTracker.prepareITStracks();
-  return; //to be removed
   mTracker.process();
   pc.outputs().snapshot(Output{"STK", "STRTRACKS", 0, Lifetime::Timeframe}, mTracker.getStrangeTrackVec());
   pc.outputs().snapshot(Output{"STK", "KINKTRACKS", 0, Lifetime::Timeframe}, mTracker.getKinkTrackVec());
