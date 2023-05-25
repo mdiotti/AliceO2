@@ -354,7 +354,6 @@ std::vector<float> daughterP = {0.723951, 0.691176, 0.273103, 0.167058, 0.167058
           LOG(info) <<"Sign of the ITS track " << mITStrack.getSign();
           LOG(info) <<"ParamOut Sign " << mITStrack.getParamOut().getSign();
           LOG(info) <<"ParamIn Sign " << mITStrack.getParamIn().getSign();
-          
         }
 
         bool match = false;
