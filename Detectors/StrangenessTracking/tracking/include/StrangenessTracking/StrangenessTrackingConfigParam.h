@@ -30,7 +30,7 @@ struct StrangenessTrackingParamConfig : public o2::conf::ConfigurableParamHelper
   float mPhiBinSize = 20;     // Phi bin size for the matching grid
   float mEtaBinSize = 0.4;     // Eta bin size for the matching grid
   float mMinMotherClus = 3.;   // minimum number of cluster to be attached to the mother
-  float mMaxChi2 = 50;         // Maximum matching chi2
+  float mMaxChi2 = 5;         // Maximum matching chi2
   bool mKinkFinder = true;     // Flag to enable/disable the kink finder
   bool mVertexMatching = true; // Flag to enable/disable vertex matching
 

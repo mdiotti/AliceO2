@@ -43,6 +43,7 @@ struct KinkTrack {
 
   int timeFrame = -1; //to be removed
   bool positive = false; //to be removed
+  bool matched = false; //to be removed
 };
 
 } // namespace dataformats
