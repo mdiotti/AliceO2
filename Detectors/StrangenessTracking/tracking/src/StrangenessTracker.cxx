@@ -159,6 +159,8 @@ void StrangenessTracker::prepareITStracks() // sort tracks by eta and phi and se
 
 void StrangenessTracker::process()
 {
+          LOG(info) <<"START CHECK";
+
 
   /*
     // Loop over V0s
@@ -351,10 +353,11 @@ std::vector<float> daughterP = {0.723951, 0.691176, 0.273103, 0.167058, 0.167058
 
         if(itstest == ITSindexRef && itstpctest == vrtxTrackIdx.getIndex() && tf == TFcount)
         {
-          LOG(info) <<"Sign of the ITS track " << mITStrack.getSign();
+          //LOG(info) <<"Sign of the ITS track " << mITStrack.getSign();
           LOG(info) <<"ParamOut Sign " << mITStrack.getParamOut().getSign();
           LOG(info) <<"ParamIn Sign " << mITStrack.getParamIn().getSign();
         }
+        LOG(info) <<"SIGN CHECK";
 
         bool match = false;
 
@@ -372,7 +375,9 @@ std::vector<float> daughterP = {0.723951, 0.691176, 0.273103, 0.167058, 0.167058
         if (mKinkTrack.matched)
           mCounts1++; // start
 
-        if (mITStrack.getSign() != kink.getSign()){
+        //if (mITStrack.getSign() != kink.getSign()){
+        if (mITStrack.getCharge() != kink.getCharge()){
+
           if(match) LOG(info) <<"Rejected for Sign track ITS " << ITSindexRef << " ITSTPC " << vrtxTrackIdx.getIndex() << " TF " << TFcount <<" Mother momentum " << mITStrack.getParamOut().getP() << " Daughter momentum " << kink.getP();
           continue;
         }
@@ -392,6 +397,9 @@ std::vector<float> daughterP = {0.723951, 0.691176, 0.273103, 0.167058, 0.167058
           mCounts3++; // vertex
 
         if (matchKinkToITSTrack(kink)) {
+
+          LOG(info) <<"FIT CHECK";
+
 
           if (mKinkTrack.matched)
             mCounts4++; // fit
