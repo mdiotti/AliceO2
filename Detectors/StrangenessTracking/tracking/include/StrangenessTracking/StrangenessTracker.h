@@ -85,7 +85,7 @@ class StrangenessTracker
 
   bool loadData(const o2::globaltracking::RecoContainer& recoData);
   bool matchDecayToITStrack(float decayR);
-  bool matchKinkToITSTrack(o2::track::TrackParCovF daughterTrack, bool verbose);
+  bool matchKinkToITSTrack(o2::track::TrackParCovF daughterTrack);
   void prepareITStracks();
   void process();
   bool updateTrack(const ITSCluster& clus, o2::track::TrackParCov& track);
