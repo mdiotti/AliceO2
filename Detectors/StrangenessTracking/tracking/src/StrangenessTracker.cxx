@@ -303,6 +303,9 @@ void StrangenessTracker::process()
         if (mITStrack.getCharge() != kink.getCharge())
           continue;
 
+        if(mITStrack.getCharge() != mITStrack.getParamOut().getCharge())
+          continue;
+
         if (mITSvtxBrackets[ITSindexRef].getMax() < kinkVrtxIDmin || mITSvtxBrackets[ITSindexRef].getMin() > kinkVrtxIDmax) {
           continue;
         }
