@@ -134,6 +134,7 @@ void StrangenessTracker::prepareITStracks() // sort tracks by eta and phi and se
 
 void StrangenessTracker::process()
 {
+  /*
   // Loop over V0s
   mDaughterTracks.resize(2); // resize to 2 prongs: first positive second negative
 
@@ -266,6 +267,7 @@ void StrangenessTracker::process()
       }
     }
   }
+  */
   if (!mStrParams->mKinkFinder) {
     return;
   }
@@ -300,8 +302,7 @@ void StrangenessTracker::process()
 
         auto& ITSindexRef = mSortedITSindexes[iTrack];
 
-        if (mITStrack.getCharge() != kink.getCharge())
-          continue;
+        mKinkTrack.likeSign = (mITStrack.getCharge() == kink.getCharge());
 
         if(mITStrack.getCharge() != mITStrack.getParamOut().getCharge())
           continue;
@@ -335,6 +336,7 @@ void StrangenessTracker::process()
 
           auto motherMass = calcKinkMotherMass(mKinkTrack.mMotherP, mKinkTrack.mDaughterP, PID::Triton, PID::PI0); // just the Hypertriton case for now
           mKinkTrack.mMasses[0] = motherMass;
+          mKinkTrack.mMasses[1] = calcKinkMotherMass(mKinkTrack.mMotherP, mKinkTrack.mDaughterP, PID::Pion, PID::Proton);  //Sigma-, Proton because there is not PID::Neutron
 
           mKinkTrack.mTrackIdx = vrtxTrackIdx;
           mKinkTrack.mITSRef = ITSindexRef;

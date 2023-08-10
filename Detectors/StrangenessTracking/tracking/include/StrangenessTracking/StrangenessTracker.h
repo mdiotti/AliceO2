@@ -154,6 +154,7 @@ class StrangenessTracker
   {
     double m2kink = PID::getMass2(pidKink);
     double m2daughter = PID::getMass2(pidDaughter);
+    if(pidKink == PID::Proton) m2kink = 0.939565 * 0.939565; // Neutron mass
     double p2Mother = pMother[0] * pMother[0] + pMother[1] * pMother[1] + pMother[2] * pMother[2];
     double p2Daughter = pDaughter[0] * pDaughter[0] + pDaughter[1] * pDaughter[1] + pDaughter[2] * pDaughter[2];
 
