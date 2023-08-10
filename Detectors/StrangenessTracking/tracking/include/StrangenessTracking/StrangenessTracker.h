@@ -17,7 +17,6 @@
 #define _ALICEO2_STRANGENESS_TRACKER_
 
 #include <gsl/gsl>
-#include <TVector3.h>
 
 #include "DataFormatsITSMFT/TopologyDictionary.h"
 #include "StrangenessTracking/IndexTableUtils.h"
@@ -111,12 +110,21 @@ class StrangenessTracker
     mClusAttachments.clear();
     mStrangeTrackVec.clear();
     mKinkTrackVec.clear();
+<<<<<<< HEAD
+=======
+    mKinkTracks.clear();
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
     mTracksIdxTable.clear();
     mSortedITStracks.clear();
     mSortedITSindexes.clear();
     mITSvtxBrackets.clear();
     mInputITSclusters.clear();
     mInputClusterSizes.clear();
+<<<<<<< HEAD
+=======
+    mInputITSclusters.clear();
+    mInputClusterSizes.clear();
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
     if (mMCTruthON) {
       mStrangeTrackLabels.clear();
     }
@@ -134,18 +142,13 @@ class StrangenessTracker
 
   double calcV0alpha(const V0& v0)
   {
-    std::array<float, 3> fV0mom, fPmom, fNmom = {0, 0, 0};
-    v0.getProng(0).getPxPyPzGlo(fPmom);
-    v0.getProng(1).getPxPyPzGlo(fNmom);
-    v0.getPxPyPzGlo(fV0mom);
-
-    TVector3 momNeg(fNmom[0], fNmom[1], fNmom[2]);
-    TVector3 momPos(fPmom[0], fPmom[1], fPmom[2]);
-    TVector3 momTot(fV0mom[0], fV0mom[1], fV0mom[2]);
-
-    Double_t lQlNeg = momNeg.Dot(momTot) / momTot.Mag();
-    Double_t lQlPos = momPos.Dot(momTot) / momTot.Mag();
-    return (lQlPos - lQlNeg) / (lQlPos + lQlNeg);
+    std::array<float, 3> momT, momP, momN;
+    v0.getProng(0).getPxPyPzGlo(momP);
+    v0.getProng(1).getPxPyPzGlo(momN);
+    v0.getPxPyPzGlo(momT);
+    float qNeg = momN[0] * momT[0] + momN[1] * momT[1] + momN[2] * momT[2];
+    float qPos = momP[0] * momT[0] + momP[1] * momT[1] + momP[2] * momT[2];
+    return (qPos - qNeg) / (qPos + qNeg);
   };
 
   double calcMotherMass(double p2Mother, double p2DauFirst, double p2DauSecond, PID pidDauFirst, PID pidDauSecond)
@@ -157,10 +160,18 @@ class StrangenessTracker
     return std::sqrt(e2Mother - p2Mother);
   }
 
+<<<<<<< HEAD
   double calcKinkMotherMass(std::array<float, 3UL> pMother, std::array<float, 3UL> pDaughter, PID pidDaughter, PID pidKink) // Kink = neuter Daughter
   {
     double m2kink = PID::getMass2(pidKink);
     double m2daughter = PID::getMass2(pidDaughter);
+=======
+   double calcKinkMotherMass(std::array<float, 3UL> pMother, std::array<float, 3UL> pDaughter, PID pidDaughter, PID pidKink) // Kink = neuter Daughter
+  {
+    double m2kink = PID::getMass2(pidKink);
+    double m2daughter = PID::getMass2(pidDaughter);
+    if(pidKink == PID::Proton) m2kink = 0.939565 * 0.939565; // Neutron mass
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
     double p2Mother = pMother[0] * pMother[0] + pMother[1] * pMother[1] + pMother[2] * pMother[2];
     double p2Daughter = pDaughter[0] * pDaughter[0] + pDaughter[1] * pDaughter[1] + pDaughter[2] * pDaughter[2];
 
@@ -195,8 +206,12 @@ class StrangenessTracker
     propPos.getPxPyPzGlo(pP);
     propNeg.getPxPyPzGlo(pN);
     std::array<float, 3> pV0 = {pP[0] + pN[0], pP[1] + pN[1], pP[2] + pN[2]};
+<<<<<<< HEAD
     newV0 = V0(v0XYZ, pV0, mFitterV0.calcPCACovMatrixFlat(0), propPos, propNeg, mV0dauIDs[kV0DauPos], mV0dauIDs[kV0DauNeg], PID::HyperTriton);
     return true;
+=======
+    newV0 = V0(v0XYZ, pV0, mFitterV0.calcPCACovMatrixFlat(0), propPos, propNeg, mV0dauIDs[kV0DauPos], mV0dauIDs[kV0DauNeg], PID::HyperTriton);    return true;
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
   };
 
   std::vector<ITSCluster> getTrackClusters()
@@ -241,6 +256,7 @@ class StrangenessTracker
     }
     // LOG(info) << " Patt Npixel: " << pattVec[0].getNPixels();
   }
+<<<<<<< HEAD
 
   float getMatchingChi2(o2::track::TrackParCovF v0, const TrackITS ITStrack)
   {
@@ -249,6 +265,13 @@ class StrangenessTracker
       if (v0.propagateTo(x, mBz)) {
         return v0.getPredictedChi2(ITStrack.getParamOut());
       }
+=======
+  
+  float getMatchingChi2(o2::track::TrackParCovF v0, const TrackITS ITStrack)  {
+    float alpha = ITStrack.getParamOut().getAlpha(), x = ITStrack.getParamOut().getX();
+    if (v0.rotate(alpha) && v0.propagateTo(x, mBz)) {
+      return v0.getPredictedChi2(ITStrack.getParamOut());
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
     }
     return -100;
   };
@@ -284,7 +307,11 @@ class StrangenessTracker
   std::vector<int> mSortedITSindexes;              // indexes of sorted ITS tracks
   IndexTableUtils mUtils;                          // structure for computing eta/phi matching selections
 
+<<<<<<< HEAD
   std::vector<kinkTrackHelper> mKinkTracks; // kink tracks
+=======
+  std::vector<kinkTrackHelper> mKinkTracks;        // kink tracks
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
 
   std::vector<StrangeTrack> mStrangeTrackVec;       // structure containing updated mother and daughter tracks
   std::vector<KinkTrack> mKinkTrackVec;             // structure containing updated mother and daughter kink tracks

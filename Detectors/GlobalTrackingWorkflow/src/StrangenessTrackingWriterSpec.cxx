@@ -45,9 +45,12 @@ DataProcessorSpec getStrangenessTrackingWriterSpec(bool useMC)
   auto loggerKink = [](std::vector<KinkTrack> const& kink) {
     LOG(info) << "StrangenessTracker writer pulled " << kink.size() << " kink tracks";
   };
+<<<<<<< HEAD
   //auto loggerKFP = [](std::vector<KFParticle> const& kfp) {
   //  LOG(info) << "StrangenessTracker writer pulled " << kfp.size() << " KFParticles";
   //};
+=======
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
 
   auto inpStTrkID = InputSpec{"strangetracks", "STK", "STRTRACKS", 0};
   auto inpKinkTrkID = InputSpec{"kinktracks", "STK", "KINKTRACKS", 0};
@@ -58,7 +61,11 @@ DataProcessorSpec getStrangenessTrackingWriterSpec(bool useMC)
                                 "o2_strange_tracks.root",
                                 MakeRootTreeWriterSpec::TreeAttributes{"o2sim", "Tree with Strange Tracks"},
                                 BranchDefinition<std::vector<StrangeTrack>>{inpStTrkID, "StrangeTracks", loggerV},
+<<<<<<< HEAD
                                 BranchDefinition<std::vector<KinkTrack>>{inpKinkTrkID, "KinkTracks", loggerKink},
+=======
+                                                                BranchDefinition<std::vector<KinkTrack>>{inpKinkTrkID, "KinkTracks", loggerKink},
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
                                 BranchDefinition<std::vector<o2::strangeness_tracking::ClusAttachments>>{inpClusAtt, "ClusUpdates"},
                                 BranchDefinition<LabelsType>{inpMCLab, "StrangeTrackMCLab", (useMC ? 1 : 0), ""} // one branch if mc labels enabled
                                 )();

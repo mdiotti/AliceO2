@@ -38,6 +38,7 @@
 #include "CommonConstants/MathConstants.h"
 #include "CommonUtils/TreeStreamRedirector.h"
 #include "TPCReconstruction/TPCFastTransformHelperO2.h"
+#include "TPCCalibration/TPCFastSpaceChargeCorrectionHelper.h"
 
 using namespace o2;
 using namespace tpc;
@@ -82,9 +83,11 @@ void createTPCSpaceChargeCorrection(
   const int debug = 0)
 {
   initSpaceCharge(histoFileName, histoName);
-  TPCFastTransformHelperO2::instance()->setGlobalSpaceChargeCorrection(getGlobalSpaceChargeCorrection);
 
-  std::unique_ptr<TPCFastTransform> fastTransform(TPCFastTransformHelperO2::instance()->create(0));
+  TPCFastSpaceChargeCorrectionHelper::instance()->setGlobalSpaceChargeCorrection(getGlobalSpaceChargeCorrection);
+  std::unique_ptr<TPCFastSpaceChargeCorrection> spCorrection = TPCFastSpaceChargeCorrectionHelper::instance()->create();
+
+  std::unique_ptr<TPCFastTransform> fastTransform(TPCFastTransformHelperO2::instance()->create(0, *spCorrection));
 
   fastTransform->writeToFile(outputFileName);
 
@@ -115,10 +118,9 @@ void createTPCSpaceChargeCorrection(
   const int debug = 0)
 {
   spaceCharge = std::make_unique<SC>(mField, nZ, nR, nPhi);
-  TFile f(scFile, "READ");
-  spaceCharge->setGlobalCorrectionsFromFile<float>(f, Side::A);
-  spaceCharge->setGlobalCorrectionsFromFile<float>(f, Side::C);
-  TPCFastTransformHelperO2::instance()->setGlobalSpaceChargeCorrection(getGlobalSpaceChargeCorrection);
+  spaceCharge->setGlobalCorrectionsFromFile(scFile, Side::A);
+  spaceCharge->setGlobalCorrectionsFromFile(scFile, Side::C);
+  TPCFastSpaceChargeCorrectionHelper::instance()->setGlobalSpaceChargeCorrection(getGlobalSpaceChargeCorrection);
 
   std::unique_ptr<TPCFastTransform> fastTransform(TPCFastTransformHelperO2::instance()->create(0));
 
@@ -179,7 +181,7 @@ void createTPCSpaceChargeCorrectionLinearCombination(
     spaceChargeStack->setGlobalCorrectionsFromFile(stackBoundaryFile, Side::C);
   }
 
-  TPCFastTransformHelperO2::instance()->setGlobalSpaceChargeCorrection(getGlobalSpaceChargeCorrectionLinearCombination);
+  TPCFastSpaceChargeCorrectionHelper::instance()->setGlobalSpaceChargeCorrection(getGlobalSpaceChargeCorrectionLinearCombination);
   std::unique_ptr<TPCFastTransform> fastTransform(TPCFastTransformHelperO2::instance()->create(0));
   fastTransform->writeToFile(outputFileName, "ccdb_object");
 
@@ -226,7 +228,7 @@ void createTPCSpaceChargeCorrectionAnalytical(
   TFile fSC("distortions_analytical.root", "RECREATE");
   spaceCharge->dumpAnalyticalCorrectionsDistortions(fSC);
 
-  TPCFastTransformHelperO2::instance()->setLocalSpaceChargeCorrection(getLocalSpaceChargeCorrection);
+  TPCFastSpaceChargeCorrectionHelper::instance()->setLocalSpaceChargeCorrection(getLocalSpaceChargeCorrection);
 
   std::unique_ptr<TPCFastTransform> fastTransform(TPCFastTransformHelperO2::instance()->create(0));
   fastTransform->writeToFile(outputFileName, "ccdb_object");

@@ -40,9 +40,18 @@ struct KinkTrack {
   std::array<float, 3> mDaughterP = {0, 0, 0};
   std::array<float, 3> mDecayVtx;
   std::array<float, 2> mMasses; // Hypertriton and Sigma
+<<<<<<< HEAD
+=======
+  
+  bool likeSign = false;
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
 };
 
 } // namespace dataformats
 } // namespace o2
 
+<<<<<<< HEAD
 #endif // _ALICEO2_KINKTRACK_
+=======
+#endif // _ALICEO2_KINKTRACK_
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a

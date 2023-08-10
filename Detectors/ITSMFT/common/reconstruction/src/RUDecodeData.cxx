@@ -32,7 +32,9 @@ namespace itsmft
 void RUDecodeData::clear()
 {
   for (int i = ruInfo->nCables; i--;) {
-    cableData[i].clear();
+    if (cableLinkPtr[i] && !cableLinkPtr[i]->rofJumpWasSeen) {
+      cableData[i].clear();
+    }
   }
   nChipsFired = 0;
   nNonEmptyLinks = 0;
@@ -96,6 +98,9 @@ bool RUDecodeData::checkLinkInSync(int icab, const o2::InteractionRecord ir)
     link->rofJumpWasSeen = false;
     return true;
   }
+  if (link->statusInTF == GBTLink::CollectedDataStatus::None || link->statusInTF == GBTLink::CollectedDataStatus::StoppedOnEndOfData) { // link was not seen in this TF or data was over
+    return true;
+  }
   // apparently there was desynchronization
   if (link->ir > ir) {
     link->rofJumpWasSeen = true;
@@ -108,9 +113,15 @@ bool RUDecodeData::checkLinkInSync(int icab, const o2::InteractionRecord ir)
     }
 #endif
   } else { // link IR is behind the majority IR? In principle, this should never happen
-    LOGP(error, "{} (cable {}) has IR={} for current majority IR={}, discarding", link->describe(), cableHWID[icab], link->ir.asString(), ir.asString());
-    // clean data of cables of this link
+#ifdef _RAW_READER_ERROR_CHECKS_
+    link->statistics.errorCounts[GBTLinkDecodingStat::ErrOldROF]++;
     linkHBFToDump[(uint64_t(link->subSpec) << 32) + link->hbfEntry] = link->irHBF.orbit;
+    if (link->needToPrintError(link->statistics.errorCounts[GBTLinkDecodingStat::ErrOldROF])) {
+      LOGP(error, "{} (cable {}) has IR={} for current majority IR={} -> {}", link->describe(),
+           cableHWID[icab], link->ir.asString(), ir.asString(), link->statistics.ErrNames[GBTLinkDecodingStat::ErrOldROF]);
+    }
+#endif
+    // clean data of cables of this link
     for (int i = 0; i < ruInfo->nCables; i++) {
       if (cableLinkPtr[i] == link) {
         cableData[i].clear();

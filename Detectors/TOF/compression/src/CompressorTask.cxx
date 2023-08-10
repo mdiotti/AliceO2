@@ -122,9 +122,10 @@ void CompressorTask<RDH, verbose, paranoid>::run(ProcessingContext& pc)
 
     /** initialise output message **/
     auto bufferSize = mOutputBufferSize >= 0 ? mOutputBufferSize + subspecBufferSize[subspec] : std::abs(mOutputBufferSize);
+    auto bufferSizeDouble = bufferSize * 2;
     auto output = Output{headerOut.dataOrigin, "CRAWDATA", headerOut.subSpecification};
     auto&& v = pc.outputs().makeVector<char>(output);
-    v.resize(bufferSize);
+    v.resize(bufferSizeDouble);
     // Better way of doing this would be to used an offset, so that we can resize the vector
     // as well. However, this should be good enough because bufferSize overestimates the size
     // of the payload.
@@ -150,8 +151,12 @@ void CompressorTask<RDH, verbose, paranoid>::run(ProcessingContext& pc)
       headerOut.payloadSize += payloadOutSize;
     }
 
+    if (headerOut.payloadSize > bufferSizeDouble) {
+      headerOut.payloadSize = 0; // put payload to zero, otherwise it will trigger a crash
+    }
+
     v.resize(headerOut.payloadSize);
-    pc.outputs().adoptContainer(output, std::move(v), true, header::gSerializationMethodNone);
+    pc.outputs().adoptContainer(output, std::move(v));
   }
 }
 

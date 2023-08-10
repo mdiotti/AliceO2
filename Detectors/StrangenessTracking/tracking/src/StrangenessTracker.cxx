@@ -35,15 +35,20 @@ bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoD
   mInputITSclusters.reserve(compClus.size());
   mInputClusterSizes.resize(compClus.size());
   o2::its::ioutils::convertCompactClusters(compClus, pattIt, mInputITSclusters, mDict);
-  getClusterSizes(mInputClusterSizes, compClus, pattIt, mDict);
+  auto pattIt2 = clusPatt.begin();
+  getClusterSizes(mInputClusterSizes, compClus, pattIt2, mDict);
 
   mITSvtxBrackets.resize(mInputITStracks.size());
   for (int i = 0; i < mInputITStracks.size(); i++) {
     mITSvtxBrackets[i] = {-1, -1};
   }
 
+<<<<<<< HEAD
   // build time bracket for each ITS and kink tracks
 
+=======
+  // build time bracket for each ITS and kink track
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
   auto trackIndex = recoData.getPrimaryVertexMatchedTracks(); // Global ID's for associated tracks
   auto vtxRefs = recoData.getPrimaryVertexMatchedTrackRefs(); // references from vertex to these track IDs
 
@@ -60,7 +65,10 @@ bool StrangenessTracker::loadData(const o2::globaltracking::RecoContainer& recoD
       }
 
       if (tvid.getSource() == GIndex::ITS) {
+<<<<<<< HEAD
 
+=======
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
         if (mITSvtxBrackets[tvid.getIndex()].getMin() == -1) {
           mITSvtxBrackets[tvid.getIndex()].setMin(iv);
           mITSvtxBrackets[tvid.getIndex()].setMax(iv);
@@ -135,6 +143,7 @@ void StrangenessTracker::prepareITStracks() // sort tracks by eta and phi and se
 
 void StrangenessTracker::process()
 {
+<<<<<<< HEAD
 
   std::vector<int> ITSidx = {19167, 61925, 98281, 98329, 113062, 74660, 85521, 103831, 24592, 76456, 131501, 36667, 37472, 97235, 16289, 24907, 64634, 21184, 13105, 14897, 108210, 100322, 141805, 143252, 59511, 16964, 52173, 53271, 112165, 5870, 10629, 101034, 22340, 42871, 111376, 133087, 136063, 48765, 26155, 121965, 30387, 31582, 33364, 77546, 129909, 110429, 128618, 23110, 109749, 76782, 95490, 91254, 92699, 33867, 10804, 67972};
   std::vector<int> ITSTPCidx = {108229, 97511, 97731, 97731, 103540, 92531, 95391, 99081, 106058, 102899, 94105, 91842, 103727, 95834, 98241, 96521, 96349, 101056, 90870, 92382, 90464, 106512, 107629, 105819, 96777, 102940, 91378, 95267, 93804, 94456, 102674, 95229, 100501, 93771, 94140, 97601, 100731, 102347, 93713, 103804, 98648, 99297, 98271, 93526, 92622, 96470, 96078, 97388, 99124, 103006, 97821, 90098, 92486, 97994, 95952, 97787};
@@ -143,6 +152,9 @@ void StrangenessTracker::process()
   std::vector<int> firstIdxITSTPC = {763, 2377, 3801, 3801, 4432, 3030, 3486, 4216, 959, 3015, 5236, 1497, 1512, 3904, 680, 1014, 2618, 878, 554, 638, 4301, 3924, 5559, 5624, 2301, 675, 2080, 2132, 4411, 205, 431, 4146, 850, 1643, 4398, 5294, 5415, 1947, 1056, 4869, 1188, 1251, 1342, 3043, 5165, 4409, 5174, 929, 4499, 3071, 3841, 3653, 3672, 1383, 411, 2698};
   std::vector<int> lastIdxITSTPC = {766, 2384, 3806, 3806, 4433, 3032, 3489, 4222, 960, 3024, 5244, 1502, 1517, 3914, 681, 1019, 2619, 880, 559, 639, 4305, 3929, 5562, 5626, 2303, 679, 2083, 2132, 4417, 210, 434, 4151, 852, 1649, 4404, 5297, 5419, 1951, 1060, 4874, 1193, 1256, 1345, 3048, 5167, 4415, 5179, 929, 4506, 3074, 3843, 3659, 3675, 1386, 418, 2702};
 
+=======
+  /*
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
   // Loop over V0s
   mDaughterTracks.resize(2); // resize to 2 prongs: first positive second negative
 
@@ -171,7 +183,13 @@ void StrangenessTracker::process()
         mDaughterTracks[kV0DauNeg] = correctedV0.getProng(kV0DauNeg);
         mITStrack = mSortedITStracks[iTrack];
         auto& ITSindexRef = mSortedITSindexes[iTrack];
+<<<<<<< HEAD
         if (mITSvtxBrackets[ITSindexRef].getMin() > v0.getVertexID() || mITSvtxBrackets[ITSindexRef].getMax() < v0.getVertexID()) {
+=======
+
+        if (mStrParams->mVertexMatching && (mITSvtxBrackets[ITSindexRef].getMin() > v0.getVertexID() ||
+                                            mITSvtxBrackets[ITSindexRef].getMax() < v0.getVertexID())) {
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
           continue;
         }
 
@@ -216,6 +234,10 @@ void StrangenessTracker::process()
 
   for (int iCasc{0}; iCasc < mInputCascadeTracks.size(); iCasc++) {
     LOG(debug) << "Analysing Cascade: " << iCasc + 1 << "/" << mInputCascadeTracks.size();
+<<<<<<< HEAD
+=======
+
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
     auto& casc = mInputCascadeTracks[iCasc];
     auto& cascV0 = mInputV0tracks[casc.getV0ID()];
     mV0dauIDs[kV0DauPos] = cascV0.getProngID(kV0DauPos);
@@ -271,7 +293,11 @@ void StrangenessTracker::process()
       }
     }
   }
+<<<<<<< HEAD
 
+=======
+  */
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
   if (!mStrParams->mKinkFinder) {
     return;
   }
@@ -306,6 +332,7 @@ void StrangenessTracker::process()
 
         auto& ITSindexRef = mSortedITSindexes[iTrack];
 
+<<<<<<< HEAD
         if (mITStrack.getCharge() != kink.getCharge())
           continue;
 
@@ -321,6 +348,12 @@ void StrangenessTracker::process()
             LOG(info) << "ITSTPC: " << firstIdxITSTPC[idx] << " - " << lastIdxITSTPC[idx];
           }
         }
+=======
+        mKinkTrack.likeSign = (mITStrack.getCharge() == kink.getCharge());
+
+        if(mITStrack.getCharge() != mITStrack.getParamOut().getCharge())
+          continue;
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
 
         if (mITSvtxBrackets[ITSindexRef].getMax() < kinkVrtxIDmin || mITSvtxBrackets[ITSindexRef].getMin() > kinkVrtxIDmax) {
           continue;
@@ -351,6 +384,10 @@ void StrangenessTracker::process()
 
           auto motherMass = calcKinkMotherMass(mKinkTrack.mMotherP, mKinkTrack.mDaughterP, PID::Triton, PID::PI0); // just the Hypertriton case for now
           mKinkTrack.mMasses[0] = motherMass;
+<<<<<<< HEAD
+=======
+          mKinkTrack.mMasses[1] = calcKinkMotherMass(mKinkTrack.mMotherP, mKinkTrack.mDaughterP, PID::Pion, PID::Proton);  //Sigma-, Proton because there is not PID::Neutron
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
 
           mKinkTrack.mTrackIdx = vrtxTrackIdx;
           mKinkTrack.mITSRef = ITSindexRef;

@@ -16,4 +16,8 @@
 
 using namespace o2::dataformats;
 
+<<<<<<< HEAD
 ClassImp(o2::dataformats::KinkTrack);
+=======
+ClassImp(o2::dataformats::KinkTrack);
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a

@@ -63,13 +63,17 @@ struct InputChannelInfo {
   ChannelAccountingType channelType = ChannelAccountingType::DPL;
   /// Oldest possible timeslice for the given channel
   TimesliceId oldestForChannel;
+  int pollerIndex = -1;
 };
+
+struct SendingPolicy;
 
 /// Output channel information
 struct OutputChannelInfo {
   std::string name = "invalid";
   ChannelAccountingType channelType = ChannelAccountingType::DPL;
   fair::mq::Channel& channel;
+  SendingPolicy const* policy;
 };
 
 struct OutputChannelState {

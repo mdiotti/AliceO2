@@ -46,7 +46,10 @@ class CellConverterSpec : public framework::Task
  public:
   /// \brief Constructor
   /// \param propagateMC If true the MCTruthContainer is propagated to the output
-  CellConverterSpec(bool propagateMC, bool useccdb) : framework::Task(), mPropagateMC(propagateMC), mLoadRecoParamFromCCDB(useccdb){};
+  /// \param useccdb If true the TecoParams
+  /// \param inputSubsepc Subsepc of input objects
+  /// \param outputSubspec Subspec of output objects
+  CellConverterSpec(bool propagateMC, bool useccdb, int inputSubsepc, int outputSubspec) : framework::Task(), mPropagateMC(propagateMC), mLoadRecoParamFromCCDB(useccdb), mSubspecificationIn(inputSubsepc), mSubspecificationOut(outputSubspec){};
 
   /// \brief Destructor
   ~CellConverterSpec() override = default;
@@ -87,6 +90,8 @@ class CellConverterSpec : public framework::Task
  private:
   bool mPropagateMC = false;                                           ///< Switch whether to process MC true labels
   bool mLoadRecoParamFromCCDB = false;                                 ///< Flag to load the the SimParams from CCDB
+  unsigned int mSubspecificationIn = 0;                                ///< Input subspecification
+  unsigned int mSubspecificationOut = 0;                               ///< Output subspecification
   o2::emcal::Geometry* mGeometry = nullptr;                            ///!<! Geometry pointer
   std::unique_ptr<o2::emcal::CaloRawFitter> mRawFitter;                ///!<! Raw fitter
   std::vector<o2::emcal::Cell> mOutputCells;                           ///< Container with output cells
@@ -97,9 +102,12 @@ class CellConverterSpec : public framework::Task
 /// \brief Creating DataProcessorSpec for the EMCAL Cell Converter Spec
 /// \ingroup EMCALworkflow
 /// \param propagateMC If true the MC truth container is propagated to the output
+/// \param useccdb If true the RecoParams are loaded from the CCDB
+/// \param inputSubsepc Subspec of input objects
+/// \param outputSubspec Subspec of output objects
 ///
 /// Refer to CellConverterSpec::run for input and output specs
-framework::DataProcessorSpec getCellConverterSpec(bool propagateMC, bool useccdb = false);
+framework::DataProcessorSpec getCellConverterSpec(bool propagateMC, bool useccdb = false, int inputSubsepc = 0, int outputSubspec = 0);
 
 } // namespace reco_workflow
 

@@ -95,7 +95,7 @@ const std::unordered_map<std::string, OutputType> OutputMap{
 
 framework::WorkflowSpec getWorkflow(CompletionPolicyData* policyData, std::vector<int> const& tpcSectors, unsigned long tpcSectorMask, std::vector<int> const& laneConfiguration,
                                     bool propagateMC, unsigned nLanes, std::string const& cfgInput, std::string const& cfgOutput, bool disableRootInput,
-                                    int caClusterer, int zsOnTheFly, bool askDISTSTF, bool selIR, bool filteredInp)
+                                    int caClusterer, int zsOnTheFly, bool askDISTSTF, bool selIR, bool filteredInp, bool requireCTPLumi)
 {
   InputType inputType;
   try {
@@ -402,12 +402,12 @@ framework::WorkflowSpec getWorkflow(CompletionPolicyData* policyData, std::vecto
     // if the caClusterer is enabled, only one data set with the full TPC is produced, and the writer
     // is configured to write one single branch
     specs.push_back(makeWriterSpec(filteredInp ? "tpc-native-cluster-writer_filtered" : "tpc-native-cluster-writer",
-                                   (inputType == InputType::Clusters || inputType == InputType::PassThrough) ? "tpc-filtered-native-clusters.root" : "tpc-native-clusters.root",
+                                   (inputType == InputType::Clusters || filteredInp) ? "tpc-filtered-native-clusters.root" : "tpc-native-clusters.root",
                                    "tpcrec",
-                                   BranchDefinition<const char*>{InputSpec{"data", ConcreteDataTypeMatcher{"TPC", inputType == InputType::PassThrough ? o2::header::DataDescription("CLUSTERNATIVEF") : o2::header::DataDescription("CLUSTERNATIVE")}},
+                                   BranchDefinition<const char*>{InputSpec{"data", ConcreteDataTypeMatcher{"TPC", filteredInp ? o2::header::DataDescription("CLUSTERNATIVEF") : o2::header::DataDescription("CLUSTERNATIVE")}},
                                                                  "TPCClusterNative",
                                                                  "databranch"},
-                                   BranchDefinition<std::vector<char>>{InputSpec{"mc", ConcreteDataTypeMatcher{"TPC", inputType == InputType::PassThrough ? o2::header::DataDescription("CLNATIVEMCLBLF") : o2::header::DataDescription("CLNATIVEMCLBL")}},
+                                   BranchDefinition<std::vector<char>>{InputSpec{"mc", ConcreteDataTypeMatcher{"TPC", filteredInp ? o2::header::DataDescription("CLNATIVEMCLBLF") : o2::header::DataDescription("CLNATIVEMCLBL")}},
                                                                        "TPCClusterNativeMCTruth",
                                                                        "mcbranch", fillLabels},
                                    (caClusterer || decompressTPC || inputType == InputType::PassThrough) && !isEnabled(OutputType::SendClustersPerSector)));
@@ -428,6 +428,7 @@ framework::WorkflowSpec getWorkflow(CompletionPolicyData* policyData, std::vecto
   // selected by output type 'tracks'
   if (runGPUReco) {
     o2::gpu::GPURecoWorkflowSpec::Config cfg;
+    cfg.requireCTPLumi = requireCTPLumi;
     cfg.decompressTPC = decompressTPC;
     cfg.decompressTPCFromROOT = decompressTPC && inputType == InputType::CompClusters;
     cfg.caClusterer = caClusterer;
@@ -449,13 +450,15 @@ framework::WorkflowSpec getWorkflow(CompletionPolicyData* policyData, std::vecto
     auto task = std::make_shared<o2::gpu::GPURecoWorkflowSpec>(policyData, cfg, tpcSectors, tpcSectorMask, ggRequest);
     gTask = task;
     Inputs taskInputs = task->inputs();
+    Options taskOptions = task->options();
     std::move(ggInputs.begin(), ggInputs.end(), std::back_inserter(taskInputs));
 
     specs.emplace_back(DataProcessorSpec{
       "tpc-tracker",
       taskInputs,
       task->outputs(),
-      AlgorithmSpec{adoptTask<o2::gpu::GPURecoWorkflowSpec>(task)}});
+      AlgorithmSpec{adoptTask<o2::gpu::GPURecoWorkflowSpec>(task)},
+      taskOptions});
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////

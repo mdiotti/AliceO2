@@ -25,6 +25,7 @@
 #include "Framework/DeviceControl.h"
 #include "Framework/DeviceSpec.h"
 #include "Framework/DeviceState.h"
+#include "Framework/DriverConfig.h"
 #include "Framework/Lifetime.h"
 #include "Framework/LifetimeHelpers.h"
 #include "Framework/ProcessingPolicies.h"
@@ -476,7 +477,8 @@ void DeviceSpecHelpers::validate(std::vector<DataProcessorSpec> const& workflow)
   }
 }
 
-void DeviceSpecHelpers::processOutEdgeActions(std::vector<DeviceSpec>& devices,
+void DeviceSpecHelpers::processOutEdgeActions(ConfigContext const& configContext,
+                                              std::vector<DeviceSpec>& devices,
                                               std::vector<DeviceId>& deviceIndex,
                                               std::vector<DeviceConnectionId>& connections,
                                               ResourceManager& resourceManager,
@@ -485,6 +487,7 @@ void DeviceSpecHelpers::processOutEdgeActions(std::vector<DeviceSpec>& devices,
                                               const std::vector<EdgeAction>& actions, const WorkflowSpec& workflow,
                                               const std::vector<OutputSpec>& outputsMatchers,
                                               const std::vector<ChannelConfigurationPolicy>& channelPolicies,
+                                              const std::vector<SendingPolicy>& sendingPolicies,
                                               std::string const& channelPrefix,
                                               ComputingOffer const& defaultOffer,
                                               OverrideServiceSpecs const& overrideServices)
@@ -646,7 +649,7 @@ void DeviceSpecHelpers::processOutEdgeActions(std::vector<DeviceSpec>& devices,
   // whether this is a real OutputRoute or if it's a forward from
   // a previous consumer device.
   // FIXME: where do I find the InputSpec for the forward?
-  auto appendOutputRouteToSourceDeviceChannel = [&outputsMatchers, &workflow, &devices, &logicalEdges](
+  auto appendOutputRouteToSourceDeviceChannel = [&outputsMatchers, &workflow, &devices, &logicalEdges, &sendingPolicies, &configContext](
                                                   size_t ei, size_t di, size_t ci) {
     assert(ei < logicalEdges.size());
     assert(di < devices.size());
@@ -655,15 +658,27 @@ void DeviceSpecHelpers::processOutEdgeActions(std::vector<DeviceSpec>& devices,
     auto& device = devices[di];
     assert(edge.consumer < workflow.size());
     auto& consumer = workflow[edge.consumer];
+    auto& producer = workflow[edge.producer];
     auto& channel = devices[di].outputChannels[ci];
     assert(edge.outputGlobalIndex < outputsMatchers.size());
+    // Iterate over all the policies and apply the first one that matches.
+    SendingPolicy const* policyPtr = nullptr;
+    for (auto& policy : sendingPolicies) {
+      if (policy.matcher(producer, consumer, configContext)) {
+        policyPtr = &policy;
+        break;
+      }
+    }
+    assert(policyPtr != nullptr);
 
     if (edge.isForward == false) {
       OutputRoute route{
         edge.timeIndex,
         consumer.maxInputTimeslices,
         outputsMatchers[edge.outputGlobalIndex],
-        channel.name};
+        channel.name,
+        policyPtr,
+      };
       device.outputs.emplace_back(route);
     } else {
       ForwardRoute route{
@@ -1087,8 +1102,8 @@ void DeviceSpecHelpers::dataProcessorSpecs2DeviceSpecs(const WorkflowSpec& workf
   defaultOffer.cpu /= deviceCount + 1;
   defaultOffer.memory /= deviceCount + 1;
 
-  processOutEdgeActions(devices, deviceIndex, connections, resourceManager, outEdgeIndex, logicalEdges,
-                        outActions, workflow, outputs, channelPolicies, channelPrefix, defaultOffer, overrideServices);
+  processOutEdgeActions(configContext, devices, deviceIndex, connections, resourceManager, outEdgeIndex, logicalEdges,
+                        outActions, workflow, outputs, channelPolicies, sendingPolicies, channelPrefix, defaultOffer, overrideServices);
 
   // FIXME: is this not the case???
   std::sort(connections.begin(), connections.end());
@@ -1113,12 +1128,6 @@ void DeviceSpecHelpers::dataProcessorSpecs2DeviceSpecs(const WorkflowSpec& workf
     for (auto& policy : callbacksPolicies) {
       if (policy.matcher(device, configContext) == true) {
         device.callbacksPolicy = policy;
-        break;
-      }
-    }
-    for (auto& policy : sendingPolicies) {
-      if (policy.matcher(device, configContext) == true) {
-        device.sendingPolicy = policy;
         break;
       }
     }
@@ -1287,6 +1296,7 @@ void split(const std::string& str, Container& cont)
 
 void DeviceSpecHelpers::prepareArguments(bool defaultQuiet, bool defaultStopped, bool interactive,
                                          unsigned short driverPort,
+                                         o2::framework::DriverConfig const& driverConfig,
                                          std::vector<DataProcessorInfo> const& processorInfos,
                                          std::vector<DeviceSpec> const& deviceSpecs,
                                          std::vector<DeviceExecution>& deviceExecutions,
@@ -1341,6 +1351,7 @@ void DeviceSpecHelpers::prepareArguments(bool defaultQuiet, bool defaultStopped,
                                         "--control", interactive ? "gui" : "static",
                                         "--shm-monitor", "false",
                                         "--log-color", "false",
+                                        driverConfig.batch ? "--batch" : "--no-batch",
                                         "--color", "false"};
 
     // we maintain options in a map so that later occurrences of the same
@@ -1647,6 +1658,21 @@ bool DeviceSpecHelpers::hasLabel(DeviceSpec const& spec, char const* label)
 {
   auto sameLabel = [other = DataProcessorLabel{{label}}](DataProcessorLabel const& label) { return label == other; };
   return std::find_if(spec.labels.begin(), spec.labels.end(), sameLabel) != spec.labels.end();
+}
+
+std::string DeviceSpecHelpers::reworkEnv(std::string const& str, DeviceSpec const& spec)
+{
+  // find all the possible timeslice variables, extract N and replace
+  // the variable with the value of spec.inputTimesliceId + N.
+  std::regex re("\\{timeslice([0-9]+)\\}");
+  std::smatch match;
+  std::string fmt = str;
+  while (std::regex_search(fmt, match, re)) {
+    auto timeslice = std::stoi(match[1]);
+    auto replacement = std::to_string(spec.inputTimesliceId + timeslice);
+    fmt = match.prefix().str() + replacement + match.suffix().str();
+  }
+  return fmt;
 }
 
 } // namespace o2::framework

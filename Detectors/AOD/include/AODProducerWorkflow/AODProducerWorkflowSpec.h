@@ -231,7 +231,7 @@ class AODProducerWorkflowDPL : public Task
 
   int mNThreads = 1;
   bool mUseMC = true;
-  bool mEnableSV = true;             // enable secondary vertices
+  bool mEnableSV = true; // enable secondary vertices
   bool mFieldON = false;
   const float cSpeed = 0.029979246f; // speed of light in TOF units
 
@@ -246,6 +246,7 @@ class AODProducerWorkflowDPL : public Task
   TString mAnchorProd{""};
   TString mRecoPass{""};
   TStopwatch mTimer;
+  bool mEMCselectLeading{false};
 
   // unordered map connects global indices and table indices of barrel tracks
   std::unordered_map<GIndex, int> mGIDToTableID;
@@ -263,6 +264,11 @@ class AODProducerWorkflowDPL : public Task
   std::unordered_map<GIndex, int> mV0ToTableID;
   int mTableV0ID{0};
 
+  // Strangeness tracking indices lookup tables
+  std::vector<int> mVertexStrLUT;                    /// LUT for accessing strangeness tracks for each vertex
+  std::vector<std::pair<int, int>> mCollisionStrTrk; /// collision index and original index of the strangeness track
+  std::vector<int> mStrTrkIndices;                   /// indices of strangeness tracks in the track table
+
   //  std::unordered_map<int, int> mIndexTableFwd;
   std::vector<int> mIndexTableFwd;
   int mIndexFwdID{0};
@@ -274,8 +280,8 @@ class AODProducerWorkflowDPL : public Task
 
   // zdc helper maps to avoid a number of "if" statements
   // when filling ZDC table
-  map<string, float> mZDCEnergyMap; // mapping detector name to a corresponding energy
-  map<string, float> mZDCTDCMap;    // mapping TDC channel to a corresponding TDC value
+  std::array<float, o2::zdc::NChannels> mZDCEnergyMap; // mapping detector id to a corresponding energy
+  std::array<float, o2::zdc::NTDCChannels> mZDCTDCMap; // mapping TDC channel id to a corresponding TDC value
 
   std::vector<uint16_t> mITSTPCTRDTriggers; // mapping from TRD tracks ID to corresponding trigger (for tracks time extraction)
   std::vector<uint16_t> mTPCTRDTriggers;    // mapping from TRD tracks ID to corresponding trigger (for tracks time extraction)
@@ -487,8 +493,9 @@ class AODProducerWorkflowDPL : public Task
   template <typename V0CursorType, typename CascadeCursorType, typename Decay3bodyCursorType>
   void fillSecondaryVertices(const o2::globaltracking::RecoContainer& data, V0CursorType& v0Cursor, CascadeCursorType& cascadeCursor, Decay3bodyCursorType& decay3bodyCursor);
 
-  template <typename V0C, typename CC, typename D3BC, typename TC, typename TCC, typename TEC>
-  void fillStrangenessTrackingTables(const o2::globaltracking::RecoContainer& data, V0C& v0Cursor, CC& cascadeCursor, D3BC& decay3bodyCursor, TC& tracksCursor, TCC& tracksCovCursor, TEC& tracksExtraCursor);
+  void prepareStrangenessTracking(const o2::globaltracking::RecoContainer& recoData);
+  template <typename V0C, typename CC, typename D3BC>
+  void fillStrangenessTrackingTables(const o2::globaltracking::RecoContainer& data, V0C& v0Cursor, CC& cascadeCursor, D3BC& decay3bodyCursor);
 
   template <typename MCParticlesCursorType>
   void fillMCParticlesTable(o2::steer::MCKinematicsReader& mcReader,
@@ -504,7 +511,8 @@ class AODProducerWorkflowDPL : public Task
                               const MCFwdTrackLabelCursorType& mcFwdTrackLabelCursor,
                               const o2::dataformats::VtxTrackRef& trackRef,
                               const gsl::span<const GIndex>& primVerGIs,
-                              const o2::globaltracking::RecoContainer& data);
+                              const o2::globaltracking::RecoContainer& data,
+                              int vertexId = -1);
 
   std::uint64_t fillBCSlice(int (&slice)[2], double tmin, double tmax, const std::map<uint64_t, int>& bcsMap) const;
 
@@ -514,13 +522,13 @@ class AODProducerWorkflowDPL : public Task
   // helper for trd pattern
   uint8_t getTRDPattern(const o2::trd::TrackTRD& track);
 
-  template <typename TCaloHandler, typename TCaloCursor, typename TCaloTRGCursor>
+  template <typename TCaloHandler, typename TCaloCursor, typename TCaloTRGCursor, typename TMCCaloLabelCursor>
   void addToCaloTable(const TCaloHandler& caloHandler, const TCaloCursor& caloCellCursor, const TCaloTRGCursor& caloTRGCursor,
-                      int eventID, int bcID, int8_t caloType);
+                      const TMCCaloLabelCursor& mcCaloCellLabelCursor, int eventID, int bcID, int8_t caloType);
 
-  template <typename TCaloCursor, typename TCaloTRGCursor>
+  template <typename TCaloCursor, typename TCaloTRGCursor, typename TMCCaloLabelCursor>
   void fillCaloTable(const TCaloCursor& caloCellCursor, const TCaloTRGCursor& caloTRGCursor,
-                     const std::map<uint64_t, int>& bcsMap,
+                     const TMCCaloLabelCursor& mcCaloCellLabelCursor, const std::map<uint64_t, int>& bcsMap,
                      const o2::globaltracking::RecoContainer& data);
 };
 
@@ -548,6 +556,9 @@ class CellHelper
 
   static int16_t getCellNumber(const o2::phos::Cell& cell)
   {
+    if (cell.getTRU()) {
+      return cell.getTRUId();
+    }
     return cell.getAbsId();
   }
   // If this cell - trigger one?

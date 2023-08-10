@@ -56,7 +56,11 @@ void customize(std::vector<o2::framework::ConfigParamSpec>& workflowOptions)
 WorkflowSpec defineDataProcessing(ConfigContext const& configcontext)
 {
   auto strParams = &StrangenessTrackingParamConfig::Instance();
+<<<<<<< HEAD
   
+=======
+
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
   // Update the (declared) parameters if changed from the command line
   auto useMC = !configcontext.options().get<bool>("disable-mc");
   auto useRootInput = !configcontext.options().get<bool>("disable-root-input");
@@ -64,8 +68,14 @@ WorkflowSpec defineDataProcessing(ConfigContext const& configcontext)
   o2::conf::ConfigurableParam::updateFromString(configcontext.options().get<std::string>("configKeyValues"));
   o2::conf::ConfigurableParam::writeINI("o2strangeness_tracking_workflow_configuration.ini");
   GID::mask_t itsSource = GID::getSourceMask(GID::ITS); // ITS tracks and clusters
+<<<<<<< HEAD
   //GID::mask_t kinkSources = GID::getSourcesMask("ITS,ITS-TPC,TPC-TOF,TPC-TRD,ITS-TPC-TRD,ITS-TPC-TOF,TPC-TRD-TOF,ITS-TPC-TRD-TOF");
   GID::mask_t kinkSources = GID::getSourcesMask("ITS,ITS-TPC");
+=======
+  
+  GID::mask_t kinkSources = GID::getSourcesMask("ITS,ITS-TPC,TPC-TOF,TPC-TRD,ITS-TPC-TRD,ITS-TPC-TOF,TPC-TRD-TOF,ITS-TPC-TRD-TOF");
+  //GID::mask_t kinkSources = GID::getSourcesMask("ITS,ITS-TPC");
+>>>>>>> ba066281d2e3d3164616381d8262de1f3971633a
 
   WorkflowSpec specs;
   auto sourceReq = strParams->mKinkFinder ? kinkSources : itsSource;
